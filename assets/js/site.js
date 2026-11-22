@@ -22,14 +22,14 @@
   };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const MODEL_ICONS = {
-    GPT: "openai", Claude: "claude", Gemini: "gemini", DeepSeek: "deepseek",
-    GLM: "glm", MiniMax: "minimax", Qwen: "qwen",
-    GameDojo: "gamedojo", GameScaling: "gamescaling", Gamer: "gamer",
+    GPT: "openai.svg", Claude: "claude.svg", Gemini: "gemini.svg", DeepSeek: "deepseek.svg",
+    GLM: "glm.svg", MiniMax: "minimax.svg", Qwen: "qwen.svg",
+    GameDojo: "gamedojo.svg?v=2", GameScaling: "gamescaling.svg", Gamer: "gamer.svg",
   };
   function modelIcon(name) {
     const family = name.split(/[\d-]/, 1)[0];
     const icon = MODEL_ICONS[family];
-    return icon ? `assets/icons/models/${icon}.svg` : "";
+    return icon ? `assets/icons/models/${icon}` : "";
   }
 
   /* ---------- data index ---------- */
