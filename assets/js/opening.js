@@ -1,221 +1,225 @@
-/* GameDojo opening sequence.
-
-   A six-second cold open played on a canvas over the hero, before the arena appears:
-     0.0  black, a single light opening in the middle
-     0.4  six hard cuts through boss fights from the original games, each on the beat with a white flash
-     3.6  the camera pulls back hard; the portals of the arena light up one by one
-     5.2  the painted logo lands and the page takes over
-
-   The cut-in frames are official store screenshots of the reference titles (assets/opening/), shown full screen
-   with a slow push-in; the arena and logo are the page's own art. 2D canvas only: no video, no library.
-
-   Plays on each page load, including reloads. Skipped with ?still or on a
-   saved-data connection. Any click, key or scroll ends it at once.  */
+/* GameDojo opening. Six cuts give way to the live logo and arena. */
 (function (g) {
   "use strict";
   const doc = g.document;
-  const el = {
-    root: doc.getElementById("opening"),
-    canvas: doc.getElementById("openingCanvas"),
-    skip: doc.getElementById("openingSkip"),
-  };
-  if (!el.root || !el.canvas) return;
+  const root = doc.documentElement;
+  const opening = doc.getElementById("opening");
+  const canvas = doc.getElementById("openingCanvas");
+  const skip = doc.getElementById("openingSkip");
+  if (!opening || !canvas || !skip) return;
 
-  // ?still skips the opening; ?intro=force overrides it for previews.
+  const ctx = canvas.getContext("2d");
   const still = /[?&]still\b/.test(location.search);
-  const saveData = !!(navigator.connection && navigator.connection.saveData);
-  const introParam = /[?&]intro(=([^&]*))?/.exec(location.search);
-  const override = !!introParam && introParam[2] === "force";
+  const force = /(?:^|[?&])intro=force(?:&|$)/.test(location.search);
+  const saveData = navigator.connection?.saveData;
+  const T = { cuts: 0.42, land: 3.56, impact: 4.58, end: 6 };
+  const CUTS = ["sekiro-1", "cuphead-1", "hollow-knight-2", "quake-2-2", "terraria-1", "sekiro-2"];
+  const angles = [0.54, -0.58, 0.96, -0.38, 0.38, -0.83];
+  const gold = "255,177,73";
+  const teal = "78,235,221";
+  let width = 0;
+  let height = 0;
+  let startTime;
+  let loadTimer;
+  let finishTimer;
+  let originalScroll = 0;
 
   function finish(immediate) {
-    if (el.root.dataset.state === "done") return;
-    el.root.dataset.state = "done";
-    doc.documentElement.classList.remove("opening-on");
-    doc.documentElement.classList.remove("intro");          // the hero's own entrance plays instead
+    if (opening.dataset.state === "done") return;
+    const restoreFocus = opening.contains(doc.activeElement);
+    opening.dataset.state = "done";
+    root.classList.remove("opening-on", "opening-landing", "intro");
+    root.style.removeProperty("--opening-landing-duration");
+    clearTimeout(loadTimer);
+    clearTimeout(finishTimer);
+    g.removeEventListener("resize", resize);
     g.removeEventListener("keydown", onSkip, true);
     g.removeEventListener("pointerdown", onSkip, true);
     g.removeEventListener("wheel", onSkip, true);
-    if (immediate) el.root.remove();
-    else setTimeout(() => el.root.remove(), 700);
+    if (originalScroll) g.scrollTo({ top: originalScroll, behavior: "instant" });
+    if (restoreFocus) doc.querySelector(".nav [data-sound-toggle]:not([hidden])")?.focus({ preventScroll: true });
+    if (immediate) opening.remove();
+    else setTimeout(() => opening.remove(), 450);
     g.dispatchEvent(new CustomEvent("gd:opening-done"));
   }
-  function onSkip() { finish(false); }
 
-  if ((still && !override) || saveData) { finish(true); return; }
+  function onSkip(event) {
+    const soundControl = event.target?.closest?.("[data-sound-toggle]");
+    if (event.type === "pointerdown" && soundControl) return;
+    if (event.type === "keydown" &&
+        (event.key === "Tab" || (soundControl && (event.key === " " || event.key === "Enter")))) return;
+    finish(false);
+  }
 
-  doc.documentElement.classList.add("opening-on");
-  el.root.dataset.state = "playing";
-  el.skip.addEventListener("click", onSkip);
+  if ((still && !force) || saveData || !ctx) { finish(true); return; }
+
+  root.classList.add("opening-on");
+  opening.dataset.state = "playing";
+  skip.addEventListener("click", onSkip);
   g.addEventListener("keydown", onSkip, true);
   g.addEventListener("pointerdown", onSkip, true);
-  g.addEventListener("wheel", onSkip, true, { passive: true });
+  g.addEventListener("wheel", onSkip, { capture: true, passive: true });
 
-  /* ---------- art ---------- */
-  let t0 = 0;                                         // set when the sequence starts; read by the load handlers
-  const art = {};
-  let ready = 0;
-  // boss fights from the original games, in cut order (official store screenshots)
-  const CUTS = ["sekiro-1", "cuphead-1", "hollow-knight-2", "quake-2-2", "terraria-1", "sekiro-2"];
-  const SOURCES = { arena: "assets/img/arena.webp", logo: "assets/img/logo.webp" };
-  CUTS.forEach(k => { SOURCES[k] = `assets/opening/${k}.jpg`; });
-  const total = Object.keys(SOURCES).length;
-  for (const key in SOURCES) {
-    const img = new Image();
-    img.decoding = "async";
-    img.onload = img.onerror = () => { if (++ready === total) start(); };
-    img.src = SOURCES[key];
-    art[key] = img;
-  }
-  // never wait on a slow connection for longer than this: the sequence starts with whatever has arrived
-  setTimeout(() => { if (!t0) start(); }, 1600);
-
-  const ctx = el.canvas.getContext("2d", { alpha: false });
-  let W = 0, H = 0, dpr = 1;
   function resize() {
-    dpr = Math.min(g.devicePixelRatio || 1, 2.5);
-    W = el.root.clientWidth; H = el.root.clientHeight;
-    el.canvas.width = Math.round(W * dpr); el.canvas.height = Math.round(H * dpr);
+    const dpr = Math.min(g.devicePixelRatio || 1, 2);
+    width = opening.clientWidth;
+    height = opening.clientHeight;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.imageSmoothingQuality = "high";            // a resize resets the context state
+    ctx.imageSmoothingQuality = "high";
   }
-  addEventListener("resize", resize);
 
-  /* ---------- timeline ---------- */
-  const T = { dark: 0.0, cuts: 0.4, pull: 3.6, land: 5.15, end: 6.0 };
+  const clamp = t => Math.max(0, Math.min(1, t));
+  const span = (t, from, to) => clamp((t - from) / (to - from));
   const easeOut = t => 1 - Math.pow(1 - t, 3);
-  const easeIn = t => t * t * t;
-  const clamp01 = t => Math.max(0, Math.min(1, t));
-  const span = (t, a, b) => clamp01((t - a) / (b - a));
 
-  // The arena is 3:1 and a screen is about 16:9, so filling by height blew it up ~5x and softened it.
-  // Fit by width, the way the page itself shows the arena: on most screens that is a downscale.
-  function wide(img, cx, cy, scale, alpha) {
-    if (!img.naturalWidth) return;
-    const w = W * scale, h = w * img.naturalHeight / img.naturalWidth;
-    ctx.globalAlpha = alpha;
-    ctx.drawImage(img, Math.round(cx - w / 2), Math.round(cy - h / 2), Math.round(w), Math.round(h));
-    ctx.globalAlpha = 1;
-  }
-  function cover(img, cx, cy, scale, alpha) {
-    if (!img.naturalWidth) return;
-    const s = Math.max(W / img.naturalWidth, H / img.naturalHeight) * scale;
-    const w = img.naturalWidth * s, h = img.naturalHeight * s;
-    ctx.globalAlpha = alpha;
-    ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
-    ctx.globalAlpha = 1;
-  }
-
-  // 0.0 - 0.4 s: black, with a thin horizontal light opening across the middle
-  function drawDark(t) {
-    const k = span(t, T.dark, T.cuts);
+  function backdrop() {
     ctx.fillStyle = "#06070c";
-    ctx.fillRect(0, 0, W, H);
-    const w = W * easeOut(k), h = 2 + 3 * k;
-    const grad = ctx.createLinearGradient(W / 2 - w / 2, 0, W / 2 + w / 2, 0);
-    grad.addColorStop(0, "rgba(255,236,190,0)");
-    grad.addColorStop(0.5, `rgba(255,236,190,${0.9 * k})`);
-    grad.addColorStop(1, "rgba(255,236,190,0)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(W / 2 - w / 2, H / 2 - h / 2, w, h);
+    ctx.fillRect(0, 0, width, height);
   }
 
-  // 0.4 - 3.6 s: hard cuts through six boss fights, a white flash on each beat and a slow push-in
-  function drawCuts(t) {
-    const k = span(t, T.cuts, T.pull);
-    const n = CUTS.length;
-    const beat = Math.min(n - 1, Math.floor(k * n));
-    const local = k * n - beat;                        // 0..1 inside this cut
-    const img = art[CUTS[beat]];
-    ctx.fillStyle = "#06070c";
-    ctx.fillRect(0, 0, W, H);
-    // alternate the drift direction so consecutive cuts never move the same way
-    const dir = beat % 2 ? -1 : 1;
-    const shake = (1 - easeOut(local)) * 10;
+  function cover(img, x, y, zoom) {
+    if (!img.naturalWidth) return;
+    const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight) * zoom;
+    const w = img.naturalWidth * scale;
+    const h = img.naturalHeight * scale;
+    ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
+  }
+
+  function slash(life, angle, color, x, y, size = 1) {
+    if (life <= 0 || life >= 1) return;
+    const length = Math.hypot(width, height) * size;
+    const spread = Math.min(26, Math.max(11, length * 0.024));
+    const tail = -length * 0.54;
+    const tip = tail + length * easeOut(clamp(life * 3.4));
+    const glow = (1 - life) ** 2;
     ctx.save();
-    ctx.translate(Math.sin(t * 90) * shake, Math.cos(t * 77) * shake * 0.6);
-    cover(img, W / 2 + dir * W * 0.015 * local, H / 2, 1.06 + 0.05 * local, 1);
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.globalCompositeOperation = "lighter";
+
+    const trail = ctx.createLinearGradient(tail, 0, tip, 0);
+    trail.addColorStop(0, `rgba(${color},0)`);
+    trail.addColorStop(0.48, `rgba(${color},${0.85 * glow})`);
+    trail.addColorStop(0.88, `rgba(255,244,215,${0.94 * glow})`);
+    trail.addColorStop(1, `rgba(${color},0)`);
+    ctx.beginPath();
+    ctx.moveTo(tail, spread * 0.28);
+    ctx.quadraticCurveTo((tail + tip) / 2, -spread * (1 + life), tip, 0);
+    ctx.quadraticCurveTo((tail + tip) / 2, spread * 0.6, tail, spread * 0.28);
+    ctx.fillStyle = trail;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(tail, spread * 0.28);
+    ctx.quadraticCurveTo((tail + tip) / 2, -spread * 0.5, tip, 0);
+    ctx.strokeStyle = trail;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+
+    ctx.strokeStyle = `rgba(${color},${glow * 0.92})`;
+    for (let i = 0; i < 24; i++) {
+      const dx = ((i * 37) % 101) / 100;
+      const dy = (((i * 29) % 103) / 51 - 1) * (11 + life * 110);
+      const sx = tail + (tip - tail) * (0.22 + dx * 0.69) - life * length * dx * 0.14;
+      const streak = (3 + 19 * dx) * (1 - life);
+      ctx.lineWidth = i % 4 === 0 ? 2 : 1;
+      ctx.beginPath();
+      ctx.moveTo(sx, dy);
+      ctx.lineTo(sx + streak, dy * 0.87);
+      ctx.stroke();
+    }
     ctx.restore();
-    // a soft vignette keeps the eye in the middle
-    const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
-    vg.addColorStop(0, "rgba(6,7,12,0)");
-    vg.addColorStop(1, "rgba(6,7,12,0.7)");
-    ctx.fillStyle = vg;
-    ctx.fillRect(0, 0, W, H);
-    // impact flash on the beat, then a quick darkening into the next cut
-    ctx.fillStyle = `rgba(255,236,190,${0.5 * Math.pow(1 - local, 6)})`;
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = `rgba(6,7,12,${0.35 * easeIn(local)})`;
-    ctx.fillRect(0, 0, W, H);
   }
 
-  function drawPull(t) {
-    const k = span(t, T.pull, T.end);
-    const out = easeOut(k);
-    ctx.fillStyle = "#06070c";
-    ctx.fillRect(0, 0, W, H);
-    // from a hard push-in all the way out to the full arena
-    const scale = 2.6 - 1.6 * out;                // ends at 1.0 = full width, exactly as the hero shows it
-    wide(art.arena, W / 2, H * (0.60 - 0.02 * out), scale, Math.min(1, 0.5 + out * 1.4));
-    // portals catching light left to right as the camera settles
-    const lit = span(t, T.pull + 0.25, T.land);
-    if (art.arena.naturalWidth && lit > 0) {
-      const aw = W * scale, ah = aw * art.arena.naturalHeight / art.arena.naturalWidth;
-      const ax = W / 2 - aw / 2, ay = H * (0.60 - 0.02 * out) - ah / 2;
-      const portals = (g.GD_DATA && g.GD_DATA.portals) || [];
-      ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-      portals.forEach((p, i) => {
-        const at = clamp01((lit - (i / portals.length) * 0.75) * 4);
-        if (at <= 0) return;
-        const cx = ax + (p.center[0] / 2172) * aw, cy = ay + (p.center[1] / 724) * ah;
-        const r = (p.bbox[2] - p.bbox[0]) / 2172 * aw * 0.95;
-        const grad = ctx.createRadialGradient(cx, cy, 1, cx, cy, r);
-        const a = 0.5 * at * (1 - 0.45 * span(t, T.land, T.end));
-        grad.addColorStop(0, `rgba(255,226,160,${a})`);
-        grad.addColorStop(0.55, `rgba(231,177,76,${a * 0.35})`);
-        grad.addColorStop(1, "rgba(231,177,76,0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, 6.2832);
-        ctx.fill();
-      });
-      ctx.restore();
+  function drawOpening(t) {
+    backdrop();
+    slash(span(t, 0, T.cuts + 0.18), -0.1, gold, width / 2, height / 2, 0.85);
+  }
+
+  function drawCut(t) {
+    const beat = span(t, T.cuts, T.land) * CUTS.length;
+    const index = Math.min(CUTS.length - 1, Math.floor(beat));
+    const progress = beat - index;
+    const direction = index % 2 === 0 ? 1 : -1;
+    const shake = (1 - easeOut(progress)) * 12;
+
+    backdrop();
+    ctx.save();
+    ctx.translate(Math.sin(t * 96) * shake, Math.cos(t * 81) * shake * 0.6);
+    cover(art[index], width / 2 + direction * width * 0.018 * progress, height / 2, 1.06 + 0.055 * progress);
+    ctx.restore();
+
+    const radius = Math.max(width, height);
+    const vignette = ctx.createRadialGradient(width / 2, height / 2, radius * 0.12, width / 2, height / 2, radius * 0.68);
+    vignette.addColorStop(0, "rgba(6,7,12,0.2)");
+    vignette.addColorStop(1, "rgba(6,7,12,0.88)");
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, width, height);
+
+    const color = direction > 0 ? gold : teal;
+    slash(progress * 1.75, angles[index], color, width * 0.5, height * 0.49);
+    slash((progress - 0.16) * 2.05, angles[index] - direction * 0.23, color, width * 0.53, height * 0.53, 0.72);
+  }
+
+  function drawLanding(t) {
+    if (opening.dataset.state !== "landing") {
+      originalScroll = g.scrollY;
+      if (originalScroll) g.scrollTo({ top: 0, behavior: "instant" });
+      opening.dataset.state = "landing";
+      root.style.setProperty("--opening-landing-duration", `${(T.end - T.land) * 1000}ms`);
+      root.classList.remove("intro");
+      root.classList.add("opening-landing");
     }
-    // the logo drops into place
-    const lg = span(t, T.land - 0.35, T.end - 0.1);
-    if (lg > 0 && art.logo.naturalWidth) {
-      const e = easeOut(lg);
-      const lw = Math.min(W * 0.52, 760) * (1.12 - 0.12 * e);
-      const lh = lw * art.logo.naturalHeight / art.logo.naturalWidth;
-      ctx.globalAlpha = Math.min(1, lg * 2.4);
-      ctx.drawImage(art.logo, W / 2 - lw / 2, H * (0.34 - 0.05 * (1 - e)) - lh / 2, lw, lh);
-      ctx.globalAlpha = 1;
-    }
-    // hand over to the page
-    const fade = span(t, T.end - 0.45, T.end);
-    if (fade > 0) {
-      ctx.fillStyle = `rgba(10,12,20,${fade})`;
-      ctx.fillRect(0, 0, W, H);
+
+    ctx.clearRect(0, 0, width, height);
+    const veil = 1 - easeOut(span(t, T.land, T.land + 0.78));
+    ctx.fillStyle = `rgba(6,7,12,${veil})`;
+    ctx.fillRect(0, 0, width, height);
+    slash(span(t, T.land, T.land + 0.57), 0.37, gold, width / 2, height / 2);
+    slash(span(t, T.land + 0.10, T.land + 0.65), -0.47, teal, width / 2, height / 2);
+
+    const hit = span(t, T.impact, T.impact + 0.48);
+    if (hit > 0 && hit < 1) {
+      const radius = Math.min(width, height) * (0.047 + easeOut(hit) * 0.28);
+      ctx.beginPath();
+      ctx.ellipse(width / 2, height * 0.65, radius, radius * 0.23, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${gold},${0.58 * (1 - hit) ** 2})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      slash(hit, -0.13, gold, width / 2, height * 0.66, 0.58);
     }
   }
 
   function frame(now) {
-    if (el.root.dataset.state === "done") return;
-    const t = (now - t0) / 1000;
+    if (opening.dataset.state === "done") return;
+    const t = (now - startTime) / 1000;
     if (t >= T.end) { finish(false); return; }
-    if (t < T.cuts) drawDark(t);
-    else if (t < T.pull) drawCuts(t);
-    else drawPull(t);
-    requestAnimationFrame(frame);
+    if (t < T.cuts) drawOpening(t);
+    else if (t < T.land) drawCut(t);
+    else drawLanding(t);
+    g.requestAnimationFrame(frame);
   }
 
   function start() {
-    if (t0) return;                                   // the image loads and the fallback timer can both call this
+    if (startTime !== undefined || opening.dataset.state !== "playing") return;
     resize();
-    t0 = performance.now();
-    requestAnimationFrame(frame);
+    startTime = performance.now();
+    g.dispatchEvent(new CustomEvent("gd:opening-start", { detail: { start: startTime } }));
+    g.requestAnimationFrame(frame);
   }
 
-  // never leave the page hidden if something goes wrong
-  setTimeout(() => finish(false), (T.end + 2.5) * 1000);
+  let remaining = CUTS.length;
+  const art = CUTS.map(key => {
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = img.onerror = () => { if (--remaining === 0) start(); };
+    img.src = `assets/opening/${key}.jpg`;
+    return img;
+  });
+  g.addEventListener("resize", resize);
+
+  // A slow image can miss a cut, but it cannot leave the homepage covered.
+  loadTimer = setTimeout(start, 1250);
+  finishTimer = setTimeout(() => finish(false), (T.end + 2) * 1000);
 })(window);

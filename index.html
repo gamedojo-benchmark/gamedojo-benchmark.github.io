@@ -13,7 +13,7 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/unbounded-600-900.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/fonts.css">
-<link rel="stylesheet" href="assets/css/site.css?v=2">
+<link rel="stylesheet" href="assets/css/site.css?v=3">
 <script>
   // Intro state is only applied when scripts run; a timer guarantees the page is never left hidden.
   (function (d) {
@@ -26,9 +26,12 @@
 <body>
 
 <!-- ============ OPENING ============ -->
-<div class="opening" id="opening" data-state="idle" aria-hidden="true">
-  <canvas id="openingCanvas"></canvas>
-  <button type="button" class="opening__skip" id="openingSkip">Skip</button>
+<div class="opening" id="opening" data-state="idle">
+  <canvas id="openingCanvas" aria-hidden="true"></canvas>
+  <div class="opening__controls" role="group" aria-label="Intro controls">
+    <button type="button" class="sound-toggle" data-sound-toggle aria-label="Sound" aria-pressed="false" hidden>Sound off</button>
+    <button type="button" class="opening__skip" id="openingSkip">Skip</button>
+  </div>
 </div>
 
 <nav class="nav" id="nav" aria-label="Page">
@@ -40,6 +43,7 @@
     <a href="#citation">BibTeX</a>
   </div>
   <a class="nav__paper" href="#paper-links">Paper</a>
+  <button type="button" class="sound-toggle" data-sound-toggle aria-label="Sound" aria-pressed="false" hidden>Sound off</button>
   <span class="nav__hp" aria-hidden="true"><i id="navHp"></i></span>
 </nav>
 
@@ -230,6 +234,7 @@
 <script src="assets/js/showcase.js"></script>
 <script src="assets/js/results.js"></script>
 <script src="assets/js/site.js"></script>
-<script src="assets/js/opening.js?v=2"></script>
+<script src="assets/js/sound.js"></script>
+<script src="assets/js/opening.js?v=3"></script>
 </body>
 </html>
