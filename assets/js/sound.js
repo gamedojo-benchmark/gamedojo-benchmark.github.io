@@ -1,168 +1,147 @@
-/* Audio shared by the intro and the home page. */
+/* Stream the same background playlist through the opening and the home page. */
 (function () {
   "use strict";
-  const AudioEngine = window.AudioContext || window.webkitAudioContext;
+  const audio = document.getElementById("backgroundMusic");
+  const dialog = document.getElementById("soundChoice");
+  const note = document.getElementById("soundChoiceNote");
   const buttons = document.querySelectorAll("[data-sound-toggle]");
-  if (!AudioEngine || !buttons.length) return;
+  if (!audio || !buttons.length) return;
 
   const preference = "gd-sound-choice";
-  const dialog = document.getElementById("soundChoice");
   const playlist = [
-    { url: "assets/audio/rapid-as-wildfires.m4a", gain: 0.34, fade: 0.95 },
-    { url: "assets/audio/all-conquering-tide.m4a", gain: 0.34, fade: 0.95 },
+    "assets/audio/rapid-as-wildfires.mp3",
+    "assets/audio/all-conquering-tide.mp3",
   ];
-  const buffers = new Map();
-  let context, current;
-  let started = false;
   let trackIndex = 0;
-  let ambientOffset = 0;
-  let request = 0;
   let choice;
+  let playing = false;
   let triedOnClick = false;
+  let entryTimer;
+  let request = 0;
   try { choice = localStorage.getItem(preference); } catch { /* storage may be disabled */ }
-  let enabled = choice === "on";
+  const ask = typeof dialog?.showModal === "function";
+  let enabled = !ask && choice === "on";
 
-  function musicPlaying() {
-    return enabled && context?.state === "running" && Boolean(current);
-  }
+  audio.src = playlist[trackIndex];
+  audio.volume = 0.34;
 
   function drawButtons() {
     buttons.forEach(button => {
       const disc = button.id === "musicDisc";
-      const active = disc ? musicPlaying() : enabled;
-      const action = active ? "Mute" : disc ? "Play" : "Unmute";
-      button.classList.toggle(disc ? "is-playing" : "is-enabled", active);
+      const canMute = enabled && (!disc || !audio.paused);
+      const action = canMute ? "Mute" : disc ? "Play" : "Unmute";
+      button.classList.toggle(disc ? "is-playing" : "is-enabled", disc ? playing : enabled);
       button.setAttribute("aria-label", `${action} ${disc ? "background music" : "sound"}`);
       const label = button.querySelector("[data-sound-label]") || button;
       label.textContent = action;
     });
   }
 
-  function load(track) {
-    const { url } = track;
-    if (!buffers.has(url)) {
-      buffers.set(url, fetch(url).then(response => {
-        if (!response.ok) throw new Error(`Could not load ${url}`);
-        return response.arrayBuffer();
-      }).then(data => context.decodeAudioData(data)).catch(error => {
-        buffers.delete(url);
-        throw error;
-      }));
+  function enter() {
+    clearTimeout(entryTimer);
+    if (dialog?.open) dialog.close();
+  }
+
+  function audioFailed() {
+    playing = false;
+    if (dialog?.open && enabled) {
+      clearTimeout(entryTimer);
+      note.textContent = "Music could not start. Try again or enter muted.";
     }
-    return buffers.get(url);
+    drawButtons();
   }
 
-  function fadeOut() {
-    if (!current) return;
-    const { source, volume, offset, startedAt } = current;
-    const now = context.currentTime;
-    ambientOffset = (offset + now - startedAt) % source.buffer.duration;
-    if (volume.gain.cancelAndHoldAtTime) volume.gain.cancelAndHoldAtTime(now);
-    else volume.gain.cancelScheduledValues(now);
-    volume.gain.setTargetAtTime(0, now, 0.06);
-    source.stop(now + 0.28);
-    current = null;
+  function play() {
+    if (!enabled || !audio.paused) return;
+    if (audio.error) audio.load();
+    const attempt = ++request;
+    audio.play().catch(() => {
+      if (request === attempt && enabled) audioFailed();
+    });
+    drawButtons();
   }
 
-  function sync() {
-    const nextRequest = ++request;
-    if (!enabled || !started || current || context?.state !== "running") return;
+  function setEnabled(on) {
+    enabled = on;
+    try { localStorage.setItem(preference, on ? "on" : "off"); } catch { /* optional */ }
+    if (on) play();
+    else {
+      ++request;
+      audio.pause();
+      playing = false;
+    }
+    drawButtons();
+  }
 
-    const track = playlist[trackIndex];
-    load(track).then(buffer => {
-      if (nextRequest !== request || context.state !== "running") return;
-      const offset = ambientOffset;
-      if (offset >= buffer.duration) return;
-
-      const source = context.createBufferSource();
-      const volume = context.createGain();
-      const now = context.currentTime;
-      source.buffer = buffer;
-      source.connect(volume);
-      volume.connect(context.destination);
-      volume.gain.setValueAtTime(0, now);
-      volume.gain.linearRampToValueAtTime(track.gain, now + track.fade);
-      source.onended = () => {
-        source.disconnect();
-        volume.disconnect();
-        if (current?.source === source) {
-          current = null;
-          buffers.delete(track.url);
-          ambientOffset = 0;
-          trackIndex = (trackIndex + 1) % playlist.length;
-          sync();
-          drawButtons();
-        }
-      };
-      source.start(now, offset);
-      current = { source, volume, offset, startedAt: now };
-      drawButtons();
-    }).catch(() => {
-      if (nextRequest !== request) return;
-      enabled = false;
-      fadeOut();
+  audio.addEventListener("playing", () => {
+    if (!enabled || audio.paused) return;
+    playing = true;
+    enter();
+    drawButtons();
+  });
+  for (const event of ["pause", "waiting"]) {
+    audio.addEventListener(event, () => {
+      playing = false;
       drawButtons();
     });
   }
-
-  function unlock() {
-    try {
-      if (!context) {
-        context = new AudioEngine();
-        context.addEventListener("statechange", () => { drawButtons(); sync(); });
-      }
-      context.resume().then(() => { drawButtons(); sync(); }).catch(() => drawButtons());
-      if (!started) load(playlist[trackIndex]).catch(() => {});
-    } catch {
-      drawButtons();
-    }
-  }
+  audio.addEventListener("error", audioFailed);
+  audio.addEventListener("ended", () => {
+    playing = false;
+    trackIndex = (trackIndex + 1) % playlist.length;
+    ++request;
+    audio.src = playlist[trackIndex];
+    play();
+    drawButtons();
+  });
 
   // This capture listener runs before the opening's click-to-skip listener.
   window.addEventListener("click", event => {
-    if (!event.isTrusted || !enabled || context?.state === "running") return;
+    if (!event.isTrusted || !enabled || !audio.paused || dialog?.open) return;
     const target = event.target;
     if (target?.closest?.("[data-sound-toggle]")) return;
     if (!triedOnClick && target?.closest?.("#opening") && !target.closest?.("#openingSkip")) {
       event.preventDefault();
     }
     triedOnClick = true;
-    unlock();
+    play();
   }, true);
-
-  function setEnabled(on) {
-    enabled = on;
-    try { localStorage.setItem(preference, on ? "on" : "off"); } catch { /* optional */ }
-    if (on) unlock();
-    else { ++request; fadeOut(); }
-    drawButtons();
-  }
 
   buttons.forEach(button => {
     button.hidden = false;
     button.addEventListener("click", () => {
-      setEnabled(button.id === "musicDisc" ? !musicPlaying() : !enabled);
+      setEnabled(button.id === "musicDisc" ? audio.paused : !enabled);
     });
   });
 
-  function startMusic() {
-    if (started) return;
-    started = true;
-    sync();
-  }
-
-  window.addEventListener("gd:opening-start", startMusic);
-  window.addEventListener("gd:opening-done", startMusic);
-
+  window.addEventListener("gd:opening-start", play);
+  window.addEventListener("gd:opening-done", play);
   drawButtons();
-  if (enabled) unlock();
-  if (choice !== "on" && choice !== "off" && dialog?.showModal) {
+
+  if (ask) {
+    dialog.querySelectorAll("button[value]").forEach(button => {
+      const preferred = button.value === (choice === "on" ? "on" : "off");
+      button.toggleAttribute("autofocus", preferred);
+      button.classList.toggle("btn--gold", preferred);
+    });
     dialog.addEventListener("submit", event => {
       event.preventDefault();
-      setEnabled(event.submitter?.value === "on");
-      dialog.close();
+      const on = event.submitter?.value === "on";
+      if (!on) {
+        setEnabled(false);
+        enter();
+        return;
+      }
+      note.textContent = "Starting music…";
+      clearTimeout(entryTimer);
+      // Let the animation proceed if the browser is slow to buffer.
+      entryTimer = setTimeout(enter, 1800);
+      setEnabled(true);
     });
-    dialog.addEventListener("cancel", () => setEnabled(false));
+    dialog.addEventListener("cancel", () => {
+      clearTimeout(entryTimer);
+      setEnabled(false);
+    });
     dialog.showModal();
   }
 })();

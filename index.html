@@ -28,13 +28,14 @@
 <dialog class="sound-choice" id="soundChoice" aria-labelledby="soundChoiceTitle" aria-describedby="soundChoiceNote">
   <form method="dialog">
     <h2 id="soundChoiceTitle">Play with sound?</h2>
-    <p id="soundChoiceNote">Play background music from the start. You can change this anytime with the music disc.</p>
+    <p id="soundChoiceNote" aria-live="polite">Play background music from the start. You can change this anytime with the music disc.</p>
     <div class="sound-choice__actions">
       <button type="submit" class="btn" value="off" autofocus>Enter muted</button>
       <button type="submit" class="btn btn--gold" value="on">Enable sound</button>
     </div>
   </form>
 </dialog>
+<audio id="backgroundMusic" preload="metadata" hidden></audio>
 
 <!-- ============ OPENING ============ -->
 <div class="opening" id="opening" data-state="idle">
@@ -251,7 +252,7 @@
 <script src="assets/js/showcase.js"></script>
 <script src="assets/js/results.js"></script>
 <script src="assets/js/site.js?v=2"></script>
-<script src="assets/js/sound.js?v=6"></script>
+<script src="assets/js/sound.js?v=7"></script>
 <script src="assets/js/opening.js?v=6"></script>
 </body>
 </html>
