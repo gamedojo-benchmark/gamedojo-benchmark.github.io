@@ -219,6 +219,8 @@ html.still .music-disc__face { animation: none; }
   color: #fff; text-decoration: none; background: rgba(10, 12, 20, 0.45);
   transition: border-color 0.2s, background 0.2s, transform 0.2s;
 }
+.links .btn { display: inline-flex; align-items: center; }
+.btn__icon { display: block; flex: none; width: 18px; height: 18px; margin-right: 7px; }
 .btn:hover { border-color: var(--gold-300); background: rgba(231, 177, 76, 0.16); transform: translateY(-1px); }
 .btn--gold { background: var(--gold-500); border-color: var(--gold-500); color: var(--ink-900); }
 .btn--gold:hover { background: var(--gold-300); }
