@@ -21,6 +21,16 @@
     set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* ignore */ } }
   };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const MODEL_ICONS = {
+    GPT: "openai", Claude: "claude", Gemini: "gemini", DeepSeek: "deepseek",
+    GLM: "glm", MiniMax: "minimax", Qwen: "qwen",
+    GameDojo: "gamedojo", GameScaling: "gamescaling", Gamer: "gamer",
+  };
+  function modelIcon(name) {
+    const family = name.split(/[\d-]/, 1)[0];
+    const icon = MODEL_ICONS[family];
+    return icon ? `assets/icons/models/${icon}.svg` : "";
+  }
 
   /* ---------- data index ---------- */
   const bosses = [], byId = {};
@@ -375,13 +385,14 @@
   (function vs() {
     const host = $("#vsRows"), rows = (window.GD_SHOWCASE || []);
     if (!host || !rows.length) { const s = $("#models"); if (s) s.hidden = true; return; }
+    const captionLabel = label => `<span class="vs__who"><img class="model-icon" src="${modelIcon(label)}" alt="">${esc(label)}</span>`;
     const cell = (side, label, cls) => side && side.src
       ? `<figure class="vs__cell ${cls}${side.win ? " is-win" : ""}"><div class="vs__frame" data-src="${esc(side.src)}" data-poster="${esc(side.poster)}">`
         + `<img src="${esc(side.poster)}" alt="" loading="lazy"></div>`
-        + `<figcaption><span class="vs__who">${label}</span><b>${esc(side.verdict)}</b>`
+        + `<figcaption>${captionLabel(label)}<b>${esc(side.verdict)}</b>`
         + (side.after ? `<span class="vs__after">${esc(side.after)}</span>` : "") + `</figcaption></figure>`
       : `<figure class="vs__cell ${cls} is-empty"><div class="vs__frame"><span class="vs__slot">${esc((side && side.missing) || "No recording")}</span></div>`
-        + `<figcaption><span class="vs__who">${label}</span><b>—</b></figcaption></figure>`;
+        + `<figcaption>${captionLabel(label)}<b>—</b></figcaption></figure>`;
     host.innerHTML = rows.map(r =>
       `<article class="vs__row">`
       + `<header class="vs__label"><span class="vs__game">${esc(r.game)} · ${esc(r.dim)}</span>`
@@ -538,8 +549,12 @@
   // one row = a label and two thin bars (time-paused over real-time) on a shared 0-100 % axis.
   // `metric` picks which half of each [win rate, progress] pair is drawn: 1 = progress, 0 = win rate.
   function barRow(svg, o) {
-    const { y, left, plotW, name, cls, paused, real, dim, delay, metric } = o;
-    svg.appendChild(svgEl("text", { x: left - 10, y: y + 15, "text-anchor": "end", class: "label " + (cls || "") }, name));
+    const { y, left, plotW, name, cls, paused, real, dim, delay, metric, labelStart = 0 } = o;
+    const icon = modelIcon(name);
+    if (icon) {
+      svg.appendChild(svgEl("image", { href: icon, x: labelStart, y: y + 3, width: 17, height: 17, "aria-hidden": "true" }));
+    }
+    svg.appendChild(svgEl("text", { x: labelStart + 23, y: y + 15, class: "label " + (cls || "") }, name));
     [[paused, C.paused, 2, 0], [real, C.real, 13, 0.45]].forEach(([c, color, dy, d]) => {
       if (!c) return;
       const v = c[metric];
@@ -579,7 +594,7 @@
     const models = rows.filter(r => r !== script).sort((a, b) => b.paused[iface][metric] - a.paused[iface][metric]
       || b.paused[iface][1] - a.paused[iface][1]);
     const random = R.medium.find(r => r.name === "Random");
-    const left = narrow ? 132 : 196, right = narrow ? 44 : 70, top = 28, rowH = 30;
+    const left = narrow ? 154 : 196, right = narrow ? 44 : 70, top = 28, rowH = 30;
     const H = top + (models.length + 1) * rowH + 30, plotW = W - left - right;
     const x = v => left + v / 100 * plotW;
     const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
@@ -591,7 +606,8 @@
     [script, ...models].forEach((r, i) => {
       const y = top + i * rowH, ref = r === script;
       if (!ref && !narrow) svg.appendChild(svgEl("text", { x: 8, y: y + 15, class: "rank" }, String(i).padStart(2, "0")));
-      barRow(svg, { y, left, plotW, name: ref ? "Scripts (reference)" : r.name, cls: ref ? "label--muted" : (r.ours ? "label--ours" : ""),
+      barRow(svg, { y, left, plotW, labelStart: narrow ? 0 : 36, name: ref ? "Scripts (reference)" : r.name,
+        cls: ref ? "label--muted" : (r.ours ? "label--ours" : ""),
         paused: r.paused[iface], real: r.realtime[iface], dim: ref, delay: i * 0.03, metric });
       const hit = svgEl("rect", { x: 0, y, width: W, height: rowH, class: "bar-hit" });
       svg.appendChild(hit);
@@ -617,7 +633,7 @@
     ["easy", "medium", "hard"].forEach((k, ti) => {
       const panel = document.createElement("div");
       panel.className = "chart__panel";
-      const left = 132, right = 40, top = 30, rowH = 30;
+      const left = 154, right = 40, top = 30, rowH = 30;
       const H = top + rows.length * rowH + 28, plotW = W - left - right;
       const x = v => left + v / 100 * plotW;
       const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H });

@@ -585,7 +585,8 @@ html.opening-on:not(.opening-landing) body > *:not(.opening) { visibility: hidde
 /* label column | GameDojo-4B | GPT | Claude - the same four columns for every row */
 .vs__head, .vs__row { display: grid; grid-template-columns: minmax(150px, 0.55fr) repeat(3, 1fr); gap: 12px 16px; }
 .vs__head { padding: 0 0 12px; border-bottom: 1px solid var(--line); }
-.vs__col { font: 600 14px/1.2 var(--body); color: #fff; display: flex; align-items: baseline; gap: 8px; }
+.vs__col { font: 600 14px/1.2 var(--body); color: #fff; display: flex; align-items: center; gap: 8px; }
+.model-icon { display: block; width: 18px; height: 18px; flex: none; }
 .vs__col em { font: 500 11px/1 var(--body); font-style: normal; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.45); }
 .vs__col--a { color: var(--teal-400); }
 .vs__col--b { color: #9ec5ff; }
@@ -625,7 +626,8 @@ html.opening-on:not(.opening-landing) body > *:not(.opening) { visibility: hidde
   .vs__head { display: none; }
   .vs__row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .vs__label { grid-column: 1 / -1; }
-  .vs__who { display: block; font: 600 10px/1 var(--body); letter-spacing: 0.04em; color: var(--teal-400); }
+  .vs__who { display: flex; align-items: center; gap: 4px; font: 600 10px/1.15 var(--body); letter-spacing: 0.04em; color: var(--teal-400); }
+  .vs__who .model-icon { width: 13px; height: 13px; }
   .vs__cell--b .vs__who { color: #9ec5ff; }
   .vs__cell--c .vs__who { color: #f0b48b; }
   .vs__cell figcaption { flex-direction: column; gap: 4px; font-size: 11px; }
