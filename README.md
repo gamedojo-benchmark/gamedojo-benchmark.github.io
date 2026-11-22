@@ -20,7 +20,7 @@ python3 tools/check_site.py
 
 检查所有 HTML/CSS 本地资源路径、锚点、页面数据引用的图片和视频、游戏入口、文件大小和 JavaScript 语法。路径按文件名大小写检查，与 GitHub Pages 的部署环境保持一致。资源检查只需要 Python 3；JavaScript 语法检查需要本机提供 Node.js，未安装时会明确报告跳过。
 
-首页的 Paper、Code、GameDojo-Data 和 GameDojo-4B 尚未提供发布地址，已标为 Soon。开放时，在 `index.html` 中填写对应 `data-todo` 链接的 `href`，移除 `aria-disabled`、`tabindex`、`title` 和 `.btn__status`，并移除 `data-todo` 属性。
+首页已链接到 [GameDojo-4B 模型卡](https://huggingface.co/iTheresaApocalypse/GameDojo-4B)。Paper、Code 和 GameDojo-Data 暂时标为 Soon。开放时，在 `index.html` 中填写对应 `data-todo` 链接的 `href`，移除 `aria-disabled`、`tabindex`、`title` 和 `.btn__status`，并移除 `data-todo` 属性。
 
 ## GitHub Pages
 
