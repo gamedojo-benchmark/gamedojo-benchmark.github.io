@@ -539,11 +539,18 @@ html.opening-on body > *:not(.opening) { visibility: hidden; }
 .release { margin: 22px 0 0; font-size: 15px; color: var(--muted); }
 .footer { background: var(--ink-900); color: rgba(255, 255, 255, 0.72); padding: 56px 0 60px; font-size: 17px; border-top: 1px solid var(--line); }
 .footer__inner { display: grid; gap: 36px; justify-items: center; text-align: center; }
-/* white silhouettes (build_logos_mono.py) on the dark page: one colour, one height band, evenly spaced */
-.footer__logos { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 24px 60px; }
-.footer__logos img { height: 58px; width: auto; max-width: 300px; object-fit: contain; opacity: 0.92; transition: opacity 0.2s; }
-.footer__logos img:hover { opacity: 1; }
-.footer__logos img[src*="ucas"], .footer__logos img[src*="hku"] { height: 50px; }
+.footer__logos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px clamp(12px, 2vw, 28px);
+  width: min(100%, 1050px);
+  padding: 18px clamp(12px, 3vw, 32px);
+  border-radius: 12px;
+  background: #fff;
+}
+.footer__logos img { width: min(164px, 17%); height: 58px; object-fit: contain; }
 .footer__legal { max-width: 900px; }
 .footer p { margin: 0 0 12px; line-height: 1.65; }
 .footer p b { color: #fff; }
@@ -622,6 +629,7 @@ html.still .fight[open], html.still .fight[open]::backdrop { animation: none; }
   .fight { max-height: calc(100% - 20px); overflow-y: auto; }
   .fight__card { grid-template-columns: 1fr; }
   .footer__inner { gap: 18px; }
+  .footer__logos img { width: min(164px, calc((100% - 20px) / 2)); }
 }
 @media (max-width: 760px) {
   /* the arena becomes a panorama you drag sideways */
