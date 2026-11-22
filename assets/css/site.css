@@ -370,7 +370,16 @@ html.still .music-disc__face { animation: none; }
 .game-row[hidden] { display: none; }
 .game-cover { position: relative; display: block; overflow: hidden; border-radius: 10px; margin-right: 8px;
   outline: 2px solid rgba(231, 177, 76, 0.55); outline-offset: 3px; background: var(--ink-700); color: #fff; text-decoration: none; }
-.game-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s ease, transform 0.4s ease; }
+.game-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center var(--cover-focus, 50%); transition: filter 0.3s ease, transform 0.4s ease; }
+.game-row[data-game="minecraft"] { --cover-focus: top; }
+.game-row[data-game="battle-city"] { --cover-focus: 72%; }
+.game-row[data-game="kirby"] { --cover-focus: 41%; }
+.game-row[data-game="doom"] .game-cover::before {
+  content: ""; position: absolute; inset: -12px;
+  background: #241214 url("../covers/doom.jpg?v=2") center / cover;
+  filter: blur(9px) brightness(0.48);
+}
+.game-row[data-game="doom"] .game-cover img { object-fit: contain; }
 .game-cover__over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   padding: 8px; text-align: center; background: rgba(7, 8, 13, 0.55); opacity: 0; transition: opacity 0.25s ease; }
 .game-cover__over b { font: 700 clamp(13px, 1.15vw, 17px)/1.15 var(--display); letter-spacing: -0.01em; }
@@ -720,6 +729,10 @@ html.still .fight[open], html.still .fight[open]::backdrop { animation: none; }
   .game-row { grid-template-columns: 1fr 1fr 1fr; }
   /* narrow: the cover becomes a banner across the row, with its name always visible */
   .game-cover { grid-column: 1 / -1; aspect-ratio: 460 / 120; margin: 10px 0 4px; }
+  .game-row[data-game="battle-city"] { --cover-focus: 53%; }
+  .game-row[data-game="super-mario-64"] { --cover-focus: 26%; }
+  .game-row[data-game="kirby"] { --cover-focus: 35%; }
+  .game-row[data-game="doom"] .game-cover img { object-position: 75% center; }
   .game-cover__over { opacity: 1; background: linear-gradient(90deg, rgba(7, 8, 13, 0.85), rgba(7, 8, 13, 0.1)); align-items: flex-start; padding-left: 14px; }
   .game-cover__badge { display: none; }
   .featured { grid-template-columns: repeat(2, 1fr); }

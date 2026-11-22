@@ -316,12 +316,12 @@
     const frag = document.createDocumentFragment();
     D.games.forEach(g => {
       const row = document.createElement("div");
-      row.className = "game-row"; row.dataset.dim = g.dim; row.dataset.pattern = g.pattern;
+      row.className = "game-row"; row.dataset.dim = g.dim; row.dataset.pattern = g.pattern; row.dataset.game = g.id;
       // first cell: the game's own cover, framed apart from the six bosses; hover blurs it and shows name + Play
       const pl = PLAY_PAGES[g.id];
       const tag = pl ? "a" : "div";
       row.innerHTML = `<${tag} class="game-cover${pl ? " is-playable" : ""}"${pl ? ` href="${pl}" aria-label="Play ${esc(g.name)}"` : ""}>`
-        + `<img src="assets/covers/${g.id}.jpg" alt="${esc(g.full || g.name)}" loading="lazy" width="460" height="215">`
+        + `<img src="assets/covers/${g.id}.jpg?v=2" alt="${esc(g.full || g.name)}" loading="lazy" width="460" height="215">`
         + `<span class="game-cover__over"><b>${esc(g.name)}</b><span>${esc(g.pattern)} · ${g.dim}</span>`
         + (pl ? `<i class="game-cover__play">▶ Play</i>` : "") + `</span>`
         + (pl ? `<span class="game-cover__badge" aria-hidden="true">▶</span>` : "")
