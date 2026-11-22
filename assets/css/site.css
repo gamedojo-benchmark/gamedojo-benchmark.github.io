@@ -587,8 +587,6 @@ html.opening-on:not(.opening-landing) body > *:not(.opening) { visibility: hidde
   background: #fff;
 }
 .footer__logos img { flex: 0 0 auto; width: auto; height: var(--logo-height); object-fit: contain; }
-/* The UCAS asset includes more vertical whitespace than the other marks. */
-.footer__logos .footer__logo--ucas { height: calc(var(--logo-height) * 1.15); }
 @media (max-width: 1140px) {
   .footer__logos { max-width: 790px; }
 }
