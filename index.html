@@ -53,8 +53,8 @@
   <a class="nav__brand" href="#top"><span class="nav__game">Game</span><span class="nav__dojo">Dojo</span></a>
   <div class="nav__links">
     <a href="#bosses">Bosses</a>
-    <a href="#models">Agents</a>
     <a href="#results">Leaderboard</a>
+    <a href="#models">Agents</a>
     <a href="#citation">BibTeX</a>
   </div>
   <a class="nav__paper" href="#paper-links">Paper</a>
@@ -147,23 +147,6 @@
     <div class="wall" id="wall"></div>
   </div>
 </section>
-<!-- ============ MODELS: the same fight, three models ============ -->
-<section class="section section--arena" id="models">
-  <div class="wrap wrap--wide">
-    <h2 class="h2 h2--light">The same fight: GameDojo-4B against the strongest GPT and Claude.</h2>
-    <p class="wall__note">Each row is one fight at Medium (same seed), and all three models are shown for the same first 60 s of game time, at 2× speed.</p>
-    <div class="vs vs--3" id="vs">
-      <div class="vs__head" aria-hidden="true">
-        <span></span>
-        <span class="vs__col vs__col--a"><img class="model-icon" src="assets/icons/models/gamedojo.svg?v=2" alt="">GameDojo-4B <em>ours</em></span>
-        <span class="vs__col vs__col--b"><img class="model-icon" src="assets/icons/models/openai.svg" alt="">GPT-6.1-Sol</span>
-        <span class="vs__col vs__col--c"><img class="model-icon" src="assets/icons/models/claude.svg" alt="">Claude-Opus-5.5</span>
-      </div>
-      <div class="vs__rows" id="vsRows"></div>
-    </div>
-  </div>
-</section>
-
 <!-- ============ RESULTS ============ -->
 <section class="section section--paper" id="results">
   <div class="wrap wrap--wide">
@@ -191,6 +174,23 @@
           <button type="button" data-m="wr" aria-pressed="false">Win rate</button>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODELS: the same fight, three models ============ -->
+<section class="section section--arena" id="models">
+  <div class="wrap wrap--wide">
+    <h2 class="h2 h2--light">The same fight: GameDojo-4B against the strongest GPT and Claude.</h2>
+    <p class="wall__note">Each row is one fight at Medium, and all three models are shown for the same first 60 s of game time, at 2× speed.</p>
+    <div class="vs vs--3" id="vs">
+      <div class="vs__head" aria-hidden="true">
+        <span></span>
+        <span class="vs__col vs__col--a"><img class="model-icon" src="assets/icons/models/gamedojo.svg?v=2" alt="">GameDojo-4B <em>ours</em></span>
+        <span class="vs__col vs__col--b"><img class="model-icon" src="assets/icons/models/openai.svg" alt="">GPT-6.1-Sol</span>
+        <span class="vs__col vs__col--c"><img class="model-icon" src="assets/icons/models/claude.svg" alt="">Claude-Opus-5.5</span>
+      </div>
+      <div class="vs__rows" id="vsRows"></div>
     </div>
   </div>
 </section>
