@@ -1,4 +1,4 @@
-/* Optional audio shared by the intro and the home page. */
+/* Audio shared by the intro and the home page. */
 (function () {
   "use strict";
   const AudioEngine = window.AudioContext || window.webkitAudioContext;
@@ -7,21 +7,22 @@
 
   const preference = "gd-sound";
   const tracks = {
-    intro: { url: "assets/audio/opening.m4a", gain: 0.66, fade: 0.08 },
-    ambient: { url: "assets/audio/arena.m4a", gain: 0.46, fade: 0.95 },
+    intro: { url: "assets/audio/opening.m4a?v=2", gain: 0.66, fade: 0.08 },
+    ambient: { url: "assets/audio/arena.m4a?v=2", gain: 0.34, fade: 0.95 },
   };
   const buffers = new Map();
   let context, current, scene;
   let introStart = 0;
   let request = 0;
-  let enabled = false;
-  try { enabled = localStorage.getItem(preference) === "on"; } catch { /* storage may be disabled */ }
+  let enabled = true;
+  let triedOnClick = false;
+  try { enabled = localStorage.getItem(preference) !== "off"; } catch { /* storage may be disabled */ }
 
   function drawButtons() {
-    const on = enabled && context?.state === "running";
     buttons.forEach(button => {
-      button.setAttribute("aria-pressed", String(Boolean(on)));
-      button.textContent = on ? "Sound on" : "Sound off";
+      button.classList.toggle("is-enabled", enabled);
+      button.setAttribute("aria-label", enabled ? "Mute sound" : "Unmute sound");
+      button.textContent = enabled ? "Mute" : "Unmute";
     });
   }
 
@@ -51,11 +52,17 @@
 
   function sync() {
     const nextRequest = ++request;
-    if (!enabled || context?.state !== "running" || !scene || current?.name === scene) return;
+    if (!enabled || !context || !scene || current?.name === scene) return;
 
     const name = scene;
+    if (context.state !== "running") {
+      // Have the short intro ready while waiting for the browser to allow audio.
+      if (name === "intro") load(name).catch(() => {});
+      return;
+    }
+    const loading = load(name);
     if (name === "intro") load("ambient").catch(() => {});
-    load(name).then(buffer => {
+    loading.then(buffer => {
       if (nextRequest !== request || context.state !== "running") return;
       const loop = name === "ambient";
       const offset = loop ? 0 : Math.max(0, (performance.now() - introStart) / 1000);
@@ -98,10 +105,22 @@
     }
   }
 
+  // This capture listener runs before the opening's click-to-skip listener.
+  window.addEventListener("click", event => {
+    if (!event.isTrusted || !enabled || context?.state === "running") return;
+    const target = event.target;
+    if (target?.closest?.("[data-sound-toggle]")) return;
+    if (!triedOnClick && target?.closest?.("#opening") && !target.closest?.("#openingSkip")) {
+      event.preventDefault();
+    }
+    triedOnClick = true;
+    unlock();
+  }, true);
+
   buttons.forEach(button => {
     button.hidden = false;
     button.addEventListener("click", () => {
-      enabled = !enabled || context?.state !== "running";
+      enabled = !enabled;
       try { localStorage.setItem(preference, enabled ? "on" : "off"); } catch { /* optional */ }
       if (enabled) unlock();
       else { ++request; fadeOut(); }
@@ -119,5 +138,6 @@
     sync();
   });
 
+  drawButtons();
   if (enabled) unlock();
 })();

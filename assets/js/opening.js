@@ -34,7 +34,7 @@
     clearTimeout(finishTimer);
     g.removeEventListener("resize", resize);
     g.removeEventListener("keydown", onSkip, true);
-    g.removeEventListener("pointerdown", onSkip, true);
+    g.removeEventListener("click", onSkip, true);
     g.removeEventListener("wheel", onSkip, true);
     if (originalScroll) g.scrollTo({ top: originalScroll, behavior: "instant" });
     if (restoreFocus) doc.querySelector(".nav [data-sound-toggle]:not([hidden])")?.focus({ preventScroll: true });
@@ -45,7 +45,7 @@
 
   function onSkip(event) {
     const soundControl = event.target?.closest?.("[data-sound-toggle]");
-    if (event.type === "pointerdown" && soundControl) return;
+    if (event.type === "click" && (event.defaultPrevented || soundControl)) return;
     if (event.type === "keydown" &&
         (event.key === "Tab" || (soundControl && (event.key === " " || event.key === "Enter")))) return;
     finish(false);
@@ -55,9 +55,8 @@
 
   root.classList.add("opening-on");
   opening.dataset.state = "playing";
-  skip.addEventListener("click", onSkip);
   g.addEventListener("keydown", onSkip, true);
-  g.addEventListener("pointerdown", onSkip, true);
+  g.addEventListener("click", onSkip, true);
   g.addEventListener("wheel", onSkip, { capture: true, passive: true });
 
   function resize() {

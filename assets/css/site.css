@@ -93,7 +93,7 @@ kbd {
   color: #eef0f6; font: 500 12px/1 var(--mono); white-space: nowrap;
 }
 .sound-toggle:hover, .opening__skip:hover { border-color: var(--gold-300); color: var(--gold-300); }
-.sound-toggle[aria-pressed="true"] { border-color: var(--gold-500); color: var(--gold-300); }
+.sound-toggle.is-enabled { border-color: var(--gold-500); color: var(--gold-300); }
 /* scroll progress drawn as a boss health bar that drains as you read */
 .nav__hp { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(231, 177, 76, 0.16); opacity: 0; transition: opacity 0.3s; }
 .nav.is-solid .nav__hp { opacity: 1; }
