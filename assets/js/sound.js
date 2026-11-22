@@ -7,14 +7,13 @@
 
   const preference = "gd-sound-choice";
   const dialog = document.getElementById("soundChoice");
-  const intro = { url: "assets/audio/opening.m4a?v=2", gain: 0.66, fade: 0.08 };
   const playlist = [
     { url: "assets/audio/rapid-as-wildfires.m4a", gain: 0.34, fade: 0.95 },
     { url: "assets/audio/all-conquering-tide.m4a", gain: 0.34, fade: 0.95 },
   ];
   const buffers = new Map();
-  let context, current, scene;
-  let introStart = 0;
+  let context, current;
+  let started = false;
   let trackIndex = 0;
   let ambientOffset = 0;
   let request = 0;
@@ -24,7 +23,7 @@
   let enabled = choice === "on";
 
   function musicPlaying() {
-    return enabled && context?.state === "running" && current?.name === "ambient";
+    return enabled && context?.state === "running" && Boolean(current);
   }
 
   function drawButtons() {
@@ -55,9 +54,9 @@
 
   function fadeOut() {
     if (!current) return;
-    const { source, volume, name, offset, startedAt } = current;
+    const { source, volume, offset, startedAt } = current;
     const now = context.currentTime;
-    if (name === "ambient") ambientOffset = (offset + now - startedAt) % source.buffer.duration;
+    ambientOffset = (offset + now - startedAt) % source.buffer.duration;
     if (volume.gain.cancelAndHoldAtTime) volume.gain.cancelAndHoldAtTime(now);
     else volume.gain.cancelScheduledValues(now);
     volume.gain.setTargetAtTime(0, now, 0.06);
@@ -67,21 +66,12 @@
 
   function sync() {
     const nextRequest = ++request;
-    if (!enabled || !context || !scene || current?.name === scene) return;
+    if (!enabled || !started || current || context?.state !== "running") return;
 
-    const name = scene;
-    const track = name === "intro" ? intro : playlist[trackIndex];
-    if (context.state !== "running") {
-      // Have the short intro ready while waiting for the browser to allow audio.
-      if (name === "intro") load(track).catch(() => {});
-      return;
-    }
-    const loading = load(track);
-    if (name === "intro") load(playlist[trackIndex]).catch(() => {});
-    loading.then(buffer => {
+    const track = playlist[trackIndex];
+    load(track).then(buffer => {
       if (nextRequest !== request || context.state !== "running") return;
-      const ambient = name === "ambient";
-      const offset = ambient ? ambientOffset : Math.max(0, (performance.now() - introStart) / 1000);
+      const offset = ambientOffset;
       if (offset >= buffer.duration) return;
 
       const source = context.createBufferSource();
@@ -97,18 +87,15 @@
         volume.disconnect();
         if (current?.source === source) {
           current = null;
-          if (ambient) {
-            buffers.delete(track.url);
-            ambientOffset = 0;
-            trackIndex = (trackIndex + 1) % playlist.length;
-            sync();
-          }
+          buffers.delete(track.url);
+          ambientOffset = 0;
+          trackIndex = (trackIndex + 1) % playlist.length;
+          sync();
           drawButtons();
         }
       };
       source.start(now, offset);
-      fadeOut();
-      current = { name, source, volume, offset, startedAt: now };
+      current = { source, volume, offset, startedAt: now };
       drawButtons();
     }).catch(() => {
       if (nextRequest !== request) return;
@@ -125,6 +112,7 @@
         context.addEventListener("statechange", () => { drawButtons(); sync(); });
       }
       context.resume().then(() => { drawButtons(); sync(); }).catch(() => drawButtons());
+      if (!started) load(playlist[trackIndex]).catch(() => {});
     } catch {
       drawButtons();
     }
@@ -157,15 +145,14 @@
     });
   });
 
-  window.addEventListener("gd:opening-start", event => {
-    introStart = event.detail.start;
-    scene = "intro";
+  function startMusic() {
+    if (started) return;
+    started = true;
     sync();
-  });
-  window.addEventListener("gd:opening-done", () => {
-    scene = "ambient";
-    sync();
-  });
+  }
+
+  window.addEventListener("gd:opening-start", startMusic);
+  window.addEventListener("gd:opening-done", startMusic);
 
   drawButtons();
   if (enabled) unlock();
