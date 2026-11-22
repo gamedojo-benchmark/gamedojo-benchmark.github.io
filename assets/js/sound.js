@@ -6,13 +6,15 @@
   if (!AudioEngine || !buttons.length) return;
 
   const preference = "gd-sound";
-  const tracks = {
-    intro: { url: "assets/audio/opening.m4a?v=2", gain: 0.66, fade: 0.08 },
-    ambient: { url: "assets/audio/arena.m4a?v=2", gain: 0.34, fade: 0.95 },
-  };
+  const intro = { url: "assets/audio/opening.m4a?v=2", gain: 0.66, fade: 0.08 };
+  const playlist = [
+    { url: "assets/audio/rapid-as-wildfires.m4a", gain: 0.34, fade: 0.95 },
+    { url: "assets/audio/all-conquering-tide.m4a", gain: 0.34, fade: 0.95 },
+  ];
   const buffers = new Map();
   let context, current, scene;
   let introStart = 0;
+  let trackIndex = 0;
   let ambientOffset = 0;
   let request = 0;
   let enabled = true;
@@ -35,17 +37,18 @@
     });
   }
 
-  function load(name) {
-    if (!buffers.has(name)) {
-      buffers.set(name, fetch(tracks[name].url).then(response => {
-        if (!response.ok) throw new Error(`Could not load ${name} audio`);
+  function load(track) {
+    const { url } = track;
+    if (!buffers.has(url)) {
+      buffers.set(url, fetch(url).then(response => {
+        if (!response.ok) throw new Error(`Could not load ${url}`);
         return response.arrayBuffer();
       }).then(data => context.decodeAudioData(data)).catch(error => {
-        buffers.delete(name);
+        buffers.delete(url);
         throw error;
       }));
     }
-    return buffers.get(name);
+    return buffers.get(url);
   }
 
   function fadeOut() {
@@ -65,33 +68,39 @@
     if (!enabled || !context || !scene || current?.name === scene) return;
 
     const name = scene;
+    const track = name === "intro" ? intro : playlist[trackIndex];
     if (context.state !== "running") {
       // Have the short intro ready while waiting for the browser to allow audio.
-      if (name === "intro") load(name).catch(() => {});
+      if (name === "intro") load(track).catch(() => {});
       return;
     }
-    const loading = load(name);
-    if (name === "intro") load("ambient").catch(() => {});
+    const loading = load(track);
+    if (name === "intro") load(playlist[trackIndex]).catch(() => {});
     loading.then(buffer => {
       if (nextRequest !== request || context.state !== "running") return;
-      const loop = name === "ambient";
-      const offset = loop ? ambientOffset : Math.max(0, (performance.now() - introStart) / 1000);
+      const ambient = name === "ambient";
+      const offset = ambient ? ambientOffset : Math.max(0, (performance.now() - introStart) / 1000);
       if (offset >= buffer.duration) return;
 
       const source = context.createBufferSource();
       const volume = context.createGain();
       const now = context.currentTime;
       source.buffer = buffer;
-      source.loop = loop;
       source.connect(volume);
       volume.connect(context.destination);
       volume.gain.setValueAtTime(0, now);
-      volume.gain.linearRampToValueAtTime(tracks[name].gain, now + tracks[name].fade);
+      volume.gain.linearRampToValueAtTime(track.gain, now + track.fade);
       source.onended = () => {
         source.disconnect();
         volume.disconnect();
         if (current?.source === source) {
           current = null;
+          if (ambient) {
+            buffers.delete(track.url);
+            ambientOffset = 0;
+            trackIndex = (trackIndex + 1) % playlist.length;
+            sync();
+          }
           drawButtons();
         }
       };
