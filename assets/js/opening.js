@@ -9,8 +9,8 @@
    The cut-in frames are official store screenshots of the reference titles (assets/opening/), shown full screen
    with a slow push-in; the arena and logo are the page's own art. 2D canvas only: no video, no library.
 
-   Skipped with ?still, on a saved-data connection, and after the first
-   visit in a session. Any click, key or scroll ends it at once.  */
+   Plays on each page load, including reloads. Skipped with ?still or on a
+   saved-data connection. Any click, key or scroll ends it at once.  */
 (function (g) {
   "use strict";
   const doc = g.document;
@@ -21,21 +21,15 @@
   };
   if (!el.root || !el.canvas) return;
 
-  // Plays whatever the OS reduce-motion setting says (it is the page's introduction; any click skips it).
-  // ?still skips it; ?intro replays it on this visit.
-  const reduce = /[?&]still\b/.test(location.search);
+  // ?still skips the opening; ?intro=force overrides it for previews.
+  const still = /[?&]still\b/.test(location.search);
   const saveData = !!(navigator.connection && navigator.connection.saveData);
-  // ?intro replays it on this visit; ?intro=force also overrides the reduced-motion preference (for review)
   const introParam = /[?&]intro(=([^&]*))?/.exec(location.search);
-  const force = !!introParam;
   const override = !!introParam && introParam[2] === "force";
-  let seen = false;
-  try { seen = sessionStorage.getItem("gd-opening") === "1"; } catch (e) { /* private mode */ }
 
   function finish(immediate) {
     if (el.root.dataset.state === "done") return;
     el.root.dataset.state = "done";
-    try { sessionStorage.setItem("gd-opening", "1"); } catch (e) { /* ignore */ }
     doc.documentElement.classList.remove("opening-on");
     doc.documentElement.classList.remove("intro");          // the hero's own entrance plays instead
     g.removeEventListener("keydown", onSkip, true);
@@ -47,7 +41,7 @@
   }
   function onSkip() { finish(false); }
 
-  if ((reduce && !override) || saveData || (seen && !force)) { finish(true); return; }
+  if ((still && !override) || saveData) { finish(true); return; }
 
   doc.documentElement.classList.add("opening-on");
   el.root.dataset.state = "playing";
