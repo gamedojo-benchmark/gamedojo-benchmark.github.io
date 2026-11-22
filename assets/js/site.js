@@ -23,7 +23,7 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const MODEL_ICONS = {
     GPT: "openai.svg", Claude: "claude.svg", Gemini: "gemini.svg", DeepSeek: "deepseek.svg",
-    GLM: "glm.svg", MiniMax: "minimax.svg", Qwen: "qwen.svg",
+    GLM: "zai.svg", MiniMax: "minimax.svg", Qwen: "qwen.svg",
     GameDojo: "gamedojo.svg?v=2", GameScaling: "gamescaling.svg", Gamer: "gamer.svg",
   };
   function modelIcon(name) {
@@ -552,7 +552,9 @@
     const { y, left, plotW, name, cls, paused, real, dim, delay, metric, labelStart = 0 } = o;
     const icon = modelIcon(name);
     if (icon) {
-      svg.appendChild(svgEl("image", { href: icon, x: labelStart, y: y + 3, width: 17, height: 17, "aria-hidden": "true" }));
+      const size = name === "GameDojo-4B" ? 22 : 17;
+      const inset = (17 - size) / 2;
+      svg.appendChild(svgEl("image", { href: icon, x: labelStart + inset, y: y + 3 + inset, width: size, height: size, "aria-hidden": "true" }));
     }
     svg.appendChild(svgEl("text", { x: labelStart + 23, y: y + 15, class: "label " + (cls || "") }, name));
     [[paused, C.paused, 2, 0], [real, C.real, 13, 0.45]].forEach(([c, color, dy, d]) => {
@@ -575,10 +577,13 @@
   }
 
   let iface = "cua", metric = 1;
+  function displayedResults(rows) {
+    return rows.filter(row => !/^(GameScaling|Gamer)(-|$)/.test(row.name));
+  }
   // GameDojo-4B is evaluated in Table 4 only, which uses the CUA interface; Table 3 and Table 4 agree on every
   // model they share in that column, so its Medium row is added to the CUA view and labelled as such elsewhere.
   function mediumRows() {
-    const rows = R.medium.filter(r => r.name !== "Idle" && r.name !== "Random");
+    const rows = displayedResults(R.medium).filter(r => r.name !== "Idle" && r.name !== "Random");
     const ours = (R.tiers || []).find(r => r.name === "GameDojo-4B");
     if (ours) rows.push({ name: "GameDojo-4B", group: ours.group, ours: true,
       paused: { cua: ours.paused.medium }, realtime: { cua: ours.realtime.medium } });
@@ -628,7 +633,8 @@
     const full = Math.round(box.clientWidth), stacked = full < 720;
     box.classList.toggle("is-stacked", stacked);
     const W = Math.max(280, stacked ? full : Math.floor((full - 44) / 3));
-    const rows = TIER_ORDER.map(n => R.tiers.find(r => r.name === n)).filter(Boolean);
+    const available = displayedResults(R.tiers);
+    const rows = TIER_ORDER.map(n => available.find(r => r.name === n)).filter(Boolean);
     const tip = tipFor(box);
     ["easy", "medium", "hard"].forEach((k, ti) => {
       const panel = document.createElement("div");
@@ -661,7 +667,7 @@
     const head = `<tr><th></th><th colspan="${cols.length}" class="split">${groupsTitle[0]}</th><th colspan="${cols.length}" class="split">${groupsTitle[1]}</th></tr>`
       + `<tr><th>Model</th>${["paused", "realtime"].map(() => cols.map((c, i) => `<th${i ? "" : ' class="split"'}>${labels[i]}</th>`).join("")).join("")}</tr>`;
     let body = "", g = "";
-    rows.forEach(r => {
+    displayedResults(rows).forEach(r => {
       if (r.group !== g) { g = r.group; body += `<tr class="grp"><td colspan="${cols.length * 2 + 1}">${esc(g)}</td></tr>`; }
       body += `<tr${r.name === "GameDojo-4B" ? ' class="ours"' : ""}><td>${esc(r.name)}</td>`
         + ["paused", "realtime"].map(m => cols.map((c, i) => `<td${i ? "" : ' class="split"'}>${cell(r[m][c])}</td>`).join("")).join("") + "</tr>";
