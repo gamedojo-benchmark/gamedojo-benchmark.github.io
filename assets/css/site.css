@@ -540,17 +540,26 @@ html.opening-on body > *:not(.opening) { visibility: hidden; }
 .footer { background: var(--ink-900); color: rgba(255, 255, 255, 0.72); padding: 56px 0 60px; font-size: 17px; border-top: 1px solid var(--line); }
 .footer__inner { display: grid; gap: 36px; justify-items: center; text-align: center; }
 .footer__logos {
+  --logo-height: clamp(50px, 4.45vw, 66px);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 12px clamp(12px, 2vw, 28px);
-  width: min(100%, 1050px);
+  gap: 12px clamp(12px, 1.6vw, 24px);
+  width: 100%;
   padding: 18px clamp(12px, 3vw, 32px);
   border-radius: 12px;
   background: #fff;
 }
-.footer__logos img { width: min(164px, 17%); height: 58px; object-fit: contain; }
+.footer__logos img { flex: 0 0 auto; width: auto; height: var(--logo-height); object-fit: contain; }
+/* The UCAS asset includes more vertical whitespace than the other marks. */
+.footer__logos .footer__logo--ucas { height: calc(var(--logo-height) * 1.15); }
+@media (max-width: 1140px) {
+  .footer__logos { max-width: 790px; }
+}
+@media (max-width: 640px) {
+  .footer__logos { --logo-height: clamp(32px, 10vw, 50px); max-width: 520px; }
+}
 .footer__legal { max-width: 900px; }
 .footer p { margin: 0 0 12px; line-height: 1.65; }
 .footer p b { color: #fff; }
@@ -629,7 +638,6 @@ html.still .fight[open], html.still .fight[open]::backdrop { animation: none; }
   .fight { max-height: calc(100% - 20px); overflow-y: auto; }
   .fight__card { grid-template-columns: 1fr; }
   .footer__inner { gap: 18px; }
-  .footer__logos img { width: min(164px, calc((100% - 20px) / 2)); }
 }
 @media (max-width: 760px) {
   /* the arena becomes a panorama you drag sideways */
