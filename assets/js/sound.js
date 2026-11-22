@@ -8,7 +8,6 @@
   if (!audio || !buttons.length) return;
 
   const preference = "gd-sound-choice";
-  const StrikeAudio = window.AudioContext || window.webkitAudioContext;
   const playlist = [
     "assets/audio/rapid-as-wildfires.mp3",
     "assets/audio/all-conquering-tide.mp3",
@@ -24,8 +23,6 @@
   let musicContext;
   let musicGain;
   let request = 0;
-  let strikeContext, strikeBuffer, activeStrike;
-  let openingFinished = false;
   try { choice = localStorage.getItem(preference); } catch { /* storage may be disabled */ }
   const ask = typeof dialog?.showModal === "function";
   let enabled = !ask && choice === "on";
@@ -120,64 +117,15 @@
     drawButtons();
   }
 
-  function prepareStrike() {
-    if (!StrikeAudio || openingFinished) return;
-    try {
-      if (!strikeContext) {
-        strikeContext = new StrikeAudio();
-        fetch("assets/audio/steel-parry.wav?v=4")
-          .then(response => {
-            if (!response.ok) throw new Error("Could not load steel strike");
-            return response.arrayBuffer();
-          })
-          .then(data => strikeContext.decodeAudioData(data))
-          .then(buffer => { strikeBuffer = buffer; })
-          .catch(() => {});
-      }
-      strikeContext.resume().catch(() => {});
-    } catch { /* The music player can still run without the optional strike. */ }
-  }
-
-  function stopStrike() {
-    if (!activeStrike) return;
-    const { source, gain } = activeStrike;
-    const now = strikeContext.currentTime;
-    // Release the previous ring smoothly when the next blade arrives.
-    gain.gain.setValueAtTime(gain.gain.value, now);
-    gain.gain.linearRampToValueAtTime(0, now + 0.004);
-    source.stop(now + 0.004);
-    activeStrike = null;
-  }
-
-  window.addEventListener("gd:opening-strike", () => {
-    if (!enabled || openingFinished || !strikeBuffer || strikeContext?.state !== "running") return;
-    stopStrike();
-    const source = strikeContext.createBufferSource();
-    const gain = strikeContext.createGain();
-    gain.gain.value = 0.68;
-    source.buffer = strikeBuffer;
-    source.connect(gain);
-    gain.connect(strikeContext.destination);
-    source.onended = () => {
-      source.disconnect();
-      gain.disconnect();
-      if (activeStrike?.source === source) activeStrike = null;
-    };
-    source.start();
-    activeStrike = { source, gain };
-  });
-
   function setEnabled(on) {
     enabled = on;
     try { localStorage.setItem(preference, on ? "on" : "off"); } catch { /* optional */ }
     if (on) {
-      prepareStrike();
       if (playing && !audio.paused) fadeVolume(musicVolume);
       else clearInterval(fadeTimer);
       play();
     } else {
       ++request;
-      stopStrike();
       fadeVolume(0, () => {
         audio.pause();
         playing = false;
@@ -219,7 +167,6 @@
       event.preventDefault();
     }
     triedOnClick = true;
-    prepareStrike();
     play();
   }, true);
 
@@ -231,12 +178,7 @@
   });
 
   window.addEventListener("gd:opening-start", play);
-  window.addEventListener("gd:opening-done", () => {
-    openingFinished = true;
-    stopStrike();
-    strikeContext?.close().catch(() => {});
-    play();
-  });
+  window.addEventListener("gd:opening-done", play);
   drawButtons();
 
   if (ask) {

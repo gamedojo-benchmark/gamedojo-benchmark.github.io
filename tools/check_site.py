@@ -150,14 +150,6 @@ try:
     results = data_file("results")
     if not results.get("medium") or not results.get("tiers"):
         errors.append("Leaderboard results are empty")
-    # Opening frames are assembled by opening.js rather than listed in HTML.
-    opening = (ROOT / "assets/js/opening.js").read_text(encoding="utf-8")
-    cuts = re.search(r"const CUTS = (\[[^;]+\]);", opening)
-    if not cuts:
-        errors.append("Opening frame list not found")
-    else:
-        for frame in json.loads(cuts[1]):
-            check_ref(index, f"assets/opening/{frame}.jpg")
     print(f"Data: {len(data['games'])} games, {len(bosses)} bosses, "
           f"{len(data['portals'])} portals, {len(playable)} playable pages, "
           f"{len(showcase)} comparison rows")

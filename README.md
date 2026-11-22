@@ -35,5 +35,3 @@ python3 tools/check_site.py
 ## 内容和版权
 
 游戏名称、角色、封面和截图属于各自权利人。页面保留原有研究用途说明和字体许可文本；参见页脚版权说明。研究数据、作者和模型结果沿用提供的版本。
-
-入场刀光的碰撞音混合了两段 CC0 实物拟音。[MTJohnson 的双剑碰撞录音](https://freesound.org/people/MTJohnson/sounds/426322/) · [xkeril 的金属碰擦录音](https://freesound.org/people/xkeril/sounds/815764/)
