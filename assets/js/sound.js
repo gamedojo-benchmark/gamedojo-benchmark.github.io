@@ -72,7 +72,7 @@
         strikeGain = strikeContext.createGain();
         strikeGain.gain.value = 0.68;
         strikeGain.connect(strikeContext.destination);
-        fetch("assets/audio/steel-parry.wav")
+        fetch("assets/audio/steel-parry.wav?v=2")
           .then(response => {
             if (!response.ok) throw new Error("Could not load steel strike");
             return response.arrayBuffer();
