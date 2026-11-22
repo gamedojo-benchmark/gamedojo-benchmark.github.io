@@ -13,7 +13,7 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/unbounded-600-900.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/fonts.css">
-<link rel="stylesheet" href="assets/css/site.css?v=6">
+<link rel="stylesheet" href="assets/css/site.css?v=7">
 <script>
   // Intro state is only applied when scripts run; a timer guarantees the page is never left hidden.
   (function (d) {
@@ -24,6 +24,17 @@
 </script>
 </head>
 <body>
+
+<dialog class="sound-choice" id="soundChoice" aria-labelledby="soundChoiceTitle" aria-describedby="soundChoiceNote">
+  <form method="dialog">
+    <h2 id="soundChoiceTitle">Play with sound?</h2>
+    <p id="soundChoiceNote">Hear the opening and background music. You can change this anytime with the music disc.</p>
+    <div class="sound-choice__actions">
+      <button type="submit" class="btn" value="off" autofocus>Enter muted</button>
+      <button type="submit" class="btn btn--gold" value="on">Enable sound</button>
+    </div>
+  </form>
+</dialog>
 
 <!-- ============ OPENING ============ -->
 <div class="opening" id="opening" data-state="idle">
@@ -240,7 +251,7 @@
 <script src="assets/js/showcase.js"></script>
 <script src="assets/js/results.js"></script>
 <script src="assets/js/site.js"></script>
-<script src="assets/js/sound.js?v=4"></script>
-<script src="assets/js/opening.js?v=5"></script>
+<script src="assets/js/sound.js?v=5"></script>
+<script src="assets/js/opening.js?v=6"></script>
 </body>
 </html>

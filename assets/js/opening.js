@@ -51,14 +51,6 @@
     finish(false);
   }
 
-  if ((still && !force) || saveData || !ctx) { finish(true); return; }
-
-  root.classList.add("opening-on");
-  opening.dataset.state = "playing";
-  g.addEventListener("keydown", onSkip, true);
-  g.addEventListener("click", onSkip, true);
-  g.addEventListener("wheel", onSkip, { capture: true, passive: true });
-
   function resize() {
     const dpr = Math.min(g.devicePixelRatio || 1, 2);
     width = opening.clientWidth;
@@ -208,17 +200,32 @@
     g.requestAnimationFrame(frame);
   }
 
-  let remaining = CUTS.length;
-  const art = CUTS.map(key => {
-    const img = new Image();
-    img.decoding = "async";
-    img.onload = img.onerror = () => { if (--remaining === 0) start(); };
-    img.src = `assets/opening/${key}.jpg`;
-    return img;
-  });
-  g.addEventListener("resize", resize);
+  let art;
+  function begin() {
+    if ((still && !force) || saveData || !ctx) { finish(true); return; }
 
-  // A slow image can miss a cut, but it cannot leave the homepage covered.
-  loadTimer = setTimeout(start, 1250);
-  finishTimer = setTimeout(() => finish(false), (T.end + 2) * 1000);
+    root.classList.add("opening-on");
+    opening.dataset.state = "playing";
+    g.addEventListener("keydown", onSkip, true);
+    g.addEventListener("click", onSkip, true);
+    g.addEventListener("wheel", onSkip, { capture: true, passive: true });
+    g.addEventListener("resize", resize);
+
+    let remaining = CUTS.length;
+    art = CUTS.map(key => {
+      const img = new Image();
+      img.decoding = "async";
+      img.onload = img.onerror = () => { if (--remaining === 0) start(); };
+      img.src = `assets/opening/${key}.jpg`;
+      return img;
+    });
+
+    // A slow image can miss a cut, but it cannot leave the homepage covered.
+    loadTimer = setTimeout(start, 1250);
+    finishTimer = setTimeout(() => finish(false), (T.end + 2) * 1000);
+  }
+
+  const soundChoice = doc.getElementById("soundChoice");
+  if (soundChoice?.open) soundChoice.addEventListener("close", begin, { once: true });
+  else begin();
 })(window);

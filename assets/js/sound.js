@@ -5,7 +5,8 @@
   const buttons = document.querySelectorAll("[data-sound-toggle]");
   if (!AudioEngine || !buttons.length) return;
 
-  const preference = "gd-sound";
+  const preference = "gd-sound-choice";
+  const dialog = document.getElementById("soundChoice");
   const intro = { url: "assets/audio/opening.m4a?v=2", gain: 0.66, fade: 0.08 };
   const playlist = [
     { url: "assets/audio/rapid-as-wildfires.m4a", gain: 0.34, fade: 0.95 },
@@ -17,9 +18,10 @@
   let trackIndex = 0;
   let ambientOffset = 0;
   let request = 0;
-  let enabled = true;
+  let choice;
   let triedOnClick = false;
-  try { enabled = localStorage.getItem(preference) !== "off"; } catch { /* storage may be disabled */ }
+  try { choice = localStorage.getItem(preference); } catch { /* storage may be disabled */ }
+  let enabled = choice === "on";
 
   function musicPlaying() {
     return enabled && context?.state === "running" && current?.name === "ambient";
@@ -140,14 +142,18 @@
     unlock();
   }, true);
 
+  function setEnabled(on) {
+    enabled = on;
+    try { localStorage.setItem(preference, on ? "on" : "off"); } catch { /* optional */ }
+    if (on) unlock();
+    else { ++request; fadeOut(); }
+    drawButtons();
+  }
+
   buttons.forEach(button => {
     button.hidden = false;
     button.addEventListener("click", () => {
-      enabled = button.id === "musicDisc" ? !musicPlaying() : !enabled;
-      try { localStorage.setItem(preference, enabled ? "on" : "off"); } catch { /* optional */ }
-      if (enabled) unlock();
-      else { ++request; fadeOut(); }
-      drawButtons();
+      setEnabled(button.id === "musicDisc" ? !musicPlaying() : !enabled);
     });
   });
 
@@ -163,4 +169,13 @@
 
   drawButtons();
   if (enabled) unlock();
+  if (choice !== "on" && choice !== "off" && dialog?.showModal) {
+    dialog.addEventListener("submit", event => {
+      event.preventDefault();
+      setEnabled(event.submitter?.value === "on");
+      dialog.close();
+    });
+    dialog.addEventListener("cancel", () => setEnabled(false));
+    dialog.showModal();
+  }
 })();
