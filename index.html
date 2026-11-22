@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameDojo: Benchmarking Real-Time Interactive Agents in Video Games</title>
+<meta name="description" content="GameDojo is a controllable interactive gameplay benchmark of 120 boss encounters across 20 games, with the 600-hour GameDojo-Data and the GameDojo-4B model.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="GameDojo: Benchmarking Real-Time Interactive Agents in Video Games">
+<meta property="og:description" content="120 boss encounters · 20 games · 9 interaction patterns · 600 hours of gameplay trajectories.">
+<meta property="og:image" content="assets/img/arena.webp">
+<meta name="theme-color" content="#0a0c14">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/unbounded-600-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/site.css">
+<script>
+  // Intro state is only applied when scripts run; a timer guarantees the page is never left hidden.
+  (function (d) {
+    if (/[?&]still\b/.test(location.search)) { d.classList.add("still"); return; }
+    d.classList.add("intro");
+    setTimeout(function () { d.classList.remove("intro"); }, 3500);
+  })(document.documentElement);
+</script>
+</head>
+<body>
+
+<!-- ============ OPENING ============ -->
+<div class="opening" id="opening" data-state="idle" aria-hidden="true">
+  <canvas id="openingCanvas"></canvas>
+  <button type="button" class="opening__skip" id="openingSkip">Skip</button>
+</div>
+
+<nav class="nav" id="nav" aria-label="Page">
+  <a class="nav__brand" href="#top"><span class="nav__game">Game</span><span class="nav__dojo">Dojo</span></a>
+  <div class="nav__links">
+    <a href="#bosses">Bosses</a>
+    <a href="#models">Agents</a>
+    <a href="#results">Leaderboard</a>
+    <a href="#citation">BibTeX</a>
+  </div>
+  <a class="nav__paper" href="#paper-links">Paper</a>
+  <span class="nav__hp" aria-hidden="true"><i id="navHp"></i></span>
+</nav>
+
+<!-- ============ HERO: the living Figure 1 ============ -->
+<header class="hero" id="top">
+  <canvas class="hero__embers" id="embers" aria-hidden="true"></canvas>
+  <div class="hero__glow" aria-hidden="true"></div>
+
+  <div class="hero__title" id="heroTitle">
+    <h1 class="title" aria-label="GameDojo">
+      <span class="title__logo" id="titleLogo">
+        <img src="assets/img/logo.webp" alt="" width="1800" height="600" fetchpriority="high" decoding="async">
+      </span>
+      <span class="title__type" aria-hidden="true" hidden><span class="title__game">Game</span><span class="title__dojo">Dojo</span></span>
+    </h1>
+    <p class="subtitle">Benchmarking Real-Time Interactive Agents in Video&nbsp;Games</p>
+    <p class="byline">
+      <span class="byline__names">Kuan Zhang<sup>1,*</sup>, Zhihao Yang<sup>2,*</sup>, Yukun Chen<sup>2,*</sup>, Xingyiliang Yin<sup>3</sup>, Mingyu Ouyang<sup>4</sup>, Yue Su<sup>5</sup>, Xiangnan Wu<sup>2</sup>, Jiaming Li<sup>2</sup>, Longze Chen<sup>2</sup>, Run Luo<sup>4</sup>, Zirong Chen<sup>1</sup>, Lu Wang<sup>1,†</sup>, Yiming Li<sup>1,†</sup></span>
+      <span class="byline__affils"><sup>1</sup>Tsinghua University &nbsp;<sup>2</sup>University of the Chinese Academy of Sciences &nbsp;<sup>3</sup>University of Macau &nbsp;<sup>4</sup>National University of Singapore &nbsp;<sup>5</sup>University of Hong Kong</span>
+      <span class="byline__notes"><sup>*</sup>Equal contribution &nbsp;&nbsp;<sup>†</sup>Co-corresponding authors</span>
+    </p>
+    <div class="links" id="paper-links">
+      <a class="btn btn--gold" href="#" data-todo="arXiv URL" aria-disabled="true" tabindex="-1" title="Available after review">Paper <span class="btn__status">Soon</span></a>
+      <a class="btn" href="#" data-todo="GitHub URL" aria-disabled="true" tabindex="-1" title="Available after review">Code <span class="btn__status">Soon</span></a>
+      <a class="btn" href="#" data-todo="dataset URL" aria-disabled="true" tabindex="-1" title="Available after review">GameDojo-Data <span class="btn__status">Soon</span></a>
+      <a class="btn" href="#" data-todo="model URL" aria-disabled="true" tabindex="-1" title="Available after review">GameDojo-4B <span class="btn__status">Soon</span></a>
+      <a class="btn" href="#citation">BibTeX</a>
+    </div>
+  </div>
+
+  <div class="arena" id="arena">
+    <div class="arena__pan" id="pan">
+      <div class="arena__zoom" id="zoom">
+        <div class="arena__stage" id="stage">
+          <picture>
+            <source media="(max-width: 520px) and (max-resolution: 1.5dppx)" srcset="assets/img/arena-1200.webp">
+            <img class="arena__img" id="arenaImg" src="assets/img/arena.webp" width="2172" height="724"
+                 alt="A lone player stands on a circular arena floor facing a semicircle of twenty golden portals; each portal holds a boss from a different game." decoding="async" fetchpriority="high">
+          </picture>
+          <div class="arena__videos" id="portals" role="group" aria-label="Twenty boss portals"></div>
+          <div class="arena__halos" id="halos" aria-hidden="true"></div>
+          <svg class="arena__beam" viewBox="0 0 2172 724" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="beamGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#3fd9c6" stop-opacity="0.15"/>
+                <stop offset="0.5" stop-color="#9ff5ea"/>
+                <stop offset="1" stop-color="#ffffff"/>
+              </linearGradient>
+            </defs>
+            <path id="beamPath" pathLength="1" d=""/>
+            <circle id="beamSpark" r="7" cx="0" cy="0"/>
+          </svg>
+          <div class="arena__labels" id="portalLabels" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+    <p class="arena__hint" id="arenaHint">
+      <span class="hint--fine">Hover a portal to open the real encounter &nbsp;·&nbsp; <kbd>←</kbd> <kbd>→</kbd> to browse &nbsp;·&nbsp; click to watch the fight</span>
+      <span class="hint--coarse">Drag to look around &nbsp;·&nbsp; tap a portal</span>
+      <button type="button" class="arena__toggle" id="arenaToggle" aria-pressed="false">Pause arena</button>
+    </p>
+  </div>
+
+  <ul class="hud" aria-label="Benchmark at a glance">
+    <li><b>20</b><span>games</span></li>
+    <li><b>120</b><span>boss encounters</span></li>
+    <li><b>9</b><span>interaction patterns</span></li>
+    <li><b>3</b><span>difficulty levels</span></li>
+    <li><b>600&thinsp;h</b><span>GameDojo-Data</span></li>
+    <li><b>4B</b><span>GameDojo model</span></li>
+  </ul>
+</header>
+<!-- ============ BOSS WALL ============ -->
+<section class="section section--arena" id="bosses">
+  <div class="wrap wrap--wide">
+    <div class="section__head">
+      <h2 class="h2 h2--light">120 encounters, 20 games, 9 ways to fight.</h2>
+      <p class="wall__count" id="wallCount" aria-live="polite"></p>
+    </div>
+    <div class="filters" id="filters" role="group" aria-label="Filter bosses"></div>
+    <div class="wall" id="wall"></div>
+  </div>
+</section>
+<!-- ============ MODELS: the same fight, three models ============ -->
+<section class="section section--arena" id="models">
+  <div class="wrap wrap--wide">
+    <h2 class="h2 h2--light">The same fight: GameDojo-4B against the strongest GPT and Claude.</h2>
+    <p class="wall__note">Each row is one fight at Medium (same seed), and all three models are shown for the same first 60 s of game time, at 2× speed.</p>
+    <div class="vs vs--3" id="vs">
+      <div class="vs__head" aria-hidden="true">
+        <span></span>
+        <span class="vs__col vs__col--a">GameDojo-4B <em>ours</em></span>
+        <span class="vs__col vs__col--b">GPT-6.1-Sol</span>
+        <span class="vs__col vs__col--c">Claude-Opus-5.5</span>
+      </div>
+      <div class="vs__rows" id="vsRows"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section class="section section--paper" id="results">
+  <div class="wrap wrap--wide">
+    <h2 class="h2">Strong models chip away at bosses. Almost none finish.</h2>
+    <p class="lede">Time paused, the best model removes under half the boss's health and wins 4.6% of fights. In real time, every frontier model falls below Random.</p>
+
+    <div class="chart-card" id="cardMedium">
+      <div class="chart-card__head">
+        <h3>Medium difficulty · all 120 bosses</h3>
+        <div class="seg" id="segInterface" role="group" aria-label="Action interface">
+          <button type="button" class="is-on" data-v="cua" aria-pressed="true">CUA</button>
+          <button type="button" data-v="semantic" aria-pressed="false">Semantic</button>
+          <button type="button" data-v="average" aria-pressed="false">Average</button>
+        </div>
+      </div>
+      <ul class="legend" aria-label="Legend">
+        <li><i class="legend__swatch legend__swatch--paused"></i>Time-paused</li>
+        <li><i class="legend__swatch legend__swatch--real"></i>Real-time</li>
+        <li><i class="legend__swatch legend__swatch--ref"></i>Random</li>
+      </ul>
+      <div class="chart" id="chartMedium" role="img" aria-label="Frontier models at Medium difficulty, time-paused versus real-time."></div>
+      <div class="chart-card__foot">
+        <div class="seg seg--metric" id="segMetric" role="group" aria-label="Metric">
+          <button type="button" class="is-on" data-m="pg" aria-pressed="true">Progress</button>
+          <button type="button" data-m="wr" aria-pressed="false">Win rate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ CITATION ============ -->
+<section class="section section--paper" id="citation">
+  <div class="wrap">
+    <h2 class="h2">BibTeX</h2>
+    <div class="bibtex">
+      <button class="bibtex__copy" id="copyBib" type="button">Copy</button>
+<pre id="bibtex">@article{zhang2026gamedojo,
+  title   = {GameDojo: Benchmarking Real-Time Interactive Agents in Video Games},
+  author  = {Zhang, Kuan and Yang, Zhihao and Chen, Yukun and Yin, Xingyiliang and Ouyang, Mingyu and Su, Yue and Wu, Xiangnan and Li, Jiaming and Chen, Longze and Luo, Run and Chen, Zirong and Wang, Lu and Li, Yiming},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</pre>
+    </div>
+    <p class="release">GameDojo, GameDojo-Data and GameDojo-4B will be open-sourced after the review process.</p>
+  </div>
+</section>
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <div class="footer__logos" aria-label="Institutions">
+      <img src="assets/img/inst-tsinghua-mono.png" alt="Tsinghua University" height="40" loading="lazy">
+      <img src="assets/img/inst-ucas-mono.png" alt="University of the Chinese Academy of Sciences" height="40" loading="lazy">
+      <img src="assets/img/inst-um-mono.png" alt="University of Macau" height="40" loading="lazy">
+      <img src="assets/img/inst-nus-mono.png" alt="National University of Singapore" height="40" loading="lazy">
+      <img src="assets/img/inst-hku-mono.png" alt="The University of Hong Kong" height="40" loading="lazy">
+    </div>
+    <div class="footer__legal">
+      <p><b>Copyright and use.</b> All game titles, characters, artwork and other intellectual property referenced on this page belong to their respective owners and publishers. GameDojo is not affiliated with, endorsed or sponsored by any of them. The encounters are independent reconstructions made for non-commercial scientific research only; game covers and screenshots are shown solely to identify the reference titles. Any commercial use of this material is prohibited.</p>
+      <p class="footer__small">© 2026 the GameDojo authors · for research use only</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ FIGHT CARD ============ -->
+<dialog class="fight" id="fight" aria-labelledby="fightTitle">
+  <div class="fight__card">
+    <button class="fight__close" type="button" id="fightClose" aria-label="Close">×</button>
+    <div class="fight__media">
+      <video id="fightVideo" muted loop playsinline></video>
+    </div>
+    <div class="fight__body">
+      <p class="eyebrow eyebrow--light" id="fightGame"></p>
+      <h3 id="fightTitle"></h3>
+      <div class="tiers" id="fightTiers" role="group" aria-label="Difficulty"></div>
+      <p class="fight__note">Time for the boss-specific script to win at each difficulty. Pick one to watch a 7 s excerpt.</p>
+      <button type="button" class="fight__play" id="fightPlay" hidden>Play this boss yourself</button>
+      <div class="fight__nav">
+        <button type="button" id="fightPrev" aria-label="Previous boss">←</button>
+        <span id="fightCount"></span>
+        <button type="button" id="fightNext" aria-label="Next boss">→</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/logo.js"></script>
+<script src="assets/js/playable.js"></script>
+<script src="assets/js/showcase.js"></script>
+<script src="assets/js/results.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/opening.js"></script>
+</body>
+</html>

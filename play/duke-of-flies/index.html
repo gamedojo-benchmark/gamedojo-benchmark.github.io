@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Play Duke of Flies · GameDojo</title>
+<link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/css/fonts.css">
+<link rel="stylesheet" href="../player.css"></head>
+<body data-mode="ready" data-standalone>
+<header class="bar">
+  <a class="bar__back" href="../../#bosses">← GameDojo</a>
+  <div class="bar__title"><b>Duke of Flies</b><span>Binding of Isaac · 2D</span></div>
+  <div class="bar__tiers" id="tiers" role="group" aria-label="Difficulty"></div>
+</header>
+<div id="stage">
+  <canvas id="view" width="854" height="480" tabindex="0" aria-label="Duke of Flies: playable encounter"></canvas>
+  <button id="veil" type="button"><b id="veilTitle">Click to play</b><span id="veilSub"></span><em id="veilTip">Shoot with the arrow keys, not J: press the arrow that points at the Duke. He drifts around, so keep turning your shots toward him.</em></button>
+</div>
+<footer class="keys"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> shoot that way</span><span><kbd>E</kbd> bomb</span></footer>
+<div id="select" class="hidden" hidden></div>
+<script>window.GD_PLAY = {"id": "isaac-duke-of-flies", "engine": "native", "case": "isaac/duke_of_flies", "label": "Duke of Flies", "module": "IsaacGame"};</script>
+<script src="game.min.js"></script>
+<script src="../player.js"></script>
+</body></html>

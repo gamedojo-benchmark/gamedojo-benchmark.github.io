@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Play King Slime · GameDojo</title>
+<link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/css/fonts.css">
+<link rel="stylesheet" href="../player.css"></head>
+<body data-mode="ready" data-standalone>
+<header class="bar">
+  <a class="bar__back" href="../../#bosses">← GameDojo</a>
+  <div class="bar__title"><b>King Slime</b><span>Terraria · 2D</span></div>
+  <div class="bar__tiers" id="tiers" role="group" aria-label="Difficulty"></div>
+</header>
+<div id="stage">
+  <canvas id="view" width="854" height="480" tabindex="0" aria-label="King Slime: playable encounter"></canvas>
+  <button id="veil" type="button"><b id="veilTitle">Click to play</b><span id="veilSub"></span><em id="veilTip">Aim with the mouse and hold left click. Keep moving: jump over the slime when it hops.</em></button>
+</div>
+<footer class="keys"><span><kbd>A</kbd><kbd>D</kbd> move</span><span><kbd>Space</kbd> jump, hold to fly</span><span><kbd>S</kbd> drop through platforms</span><span><kbd>Mouse</kbd> aim</span><span><kbd>Left</kbd><kbd>click</kbd> shoot</span><span><kbd>Q</kbd> bow / sword</span></footer>
+<div id="select" class="hidden" hidden></div>
+<script>window.GD_PLAY = {"id": "terraria-king-slime", "engine": "bb", "case": "terraria/king_slime", "label": "King Slime"};</script>
+<script src="game.min.js"></script>
+<script src="../player.js"></script>
+</body></html>

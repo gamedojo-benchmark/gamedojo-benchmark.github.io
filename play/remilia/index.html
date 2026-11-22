@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Play Remilia Scarlet · GameDojo</title>
+<link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/css/fonts.css">
+<link rel="stylesheet" href="../player.css"></head>
+<body data-mode="ready" data-standalone>
+<header class="bar">
+  <a class="bar__back" href="../../#bosses">← GameDojo</a>
+  <div class="bar__title"><b>Remilia Scarlet</b><span>Touhou EoSD · 2D</span></div>
+  <div class="bar__tiers" id="tiers" role="group" aria-label="Difficulty"></div>
+</header>
+<div id="stage">
+  <canvas id="view" width="854" height="480" tabindex="0" aria-label="Remilia Scarlet: playable encounter"></canvas>
+  <button id="veil" type="button"><b id="veilTitle">Click to play</b><span id="veilSub"></span><em id="veilTip">Hold J to shoot upward; your shots home in. Hold Shift to move slowly through bullets.</em></button>
+</div>
+<footer class="keys"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> focus (slow)</span><span><kbd>J</kbd> shoot</span><span><kbd>K</kbd> bomb</span><span><kbd>Q</kbd><kbd>E</kbd> shot type</span></footer>
+<div id="select" class="hidden" hidden></div>
+<script>window.GD_PLAY = {"id": "touhou-remilia-scarlet", "engine": "native", "case": "touhou/remilia", "label": "Remilia Scarlet", "module": "TouhouGame"};</script>
+<script src="game.min.js"></script>
+<script src="../player.js"></script>
+</body></html>

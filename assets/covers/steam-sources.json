@@ -1,0 +1,100 @@
+{
+ "hollow-knight": {
+  "app": 367520,
+  "name": "Hollow Knight",
+  "cover": "hollow-knight.jpg",
+  "bytes": 57481,
+  "trailer": null
+ },
+ "mega-man": {
+  "app": 742300,
+  "name": "Mega Man 11",
+  "cover": "mega-man.jpg",
+  "bytes": 37326,
+  "trailer": null
+ },
+ "cuphead": {
+  "app": 268910,
+  "name": "Cuphead",
+  "cover": "cuphead.jpg",
+  "bytes": 46289,
+  "trailer": null
+ },
+ "kof-97": {
+  "app": 702120,
+  "name": "THE KING OF FIGHTERS '97 GLOBAL MATCH",
+  "cover": "kof-97.jpg",
+  "bytes": 74961,
+  "trailer": null
+ },
+ "soul-knight": {
+  "app": 2306390,
+  "name": "Soul Knight: The Forest of Spirits",
+  "cover": "soul-knight.jpg",
+  "bytes": 37449,
+  "trailer": null
+ },
+ "isaac": {
+  "app": 250900,
+  "name": "The Binding of Isaac: Rebirth",
+  "cover": "isaac.jpg",
+  "bytes": 29810,
+  "trailer": null
+ },
+ "touhou": {
+  "app": 4659620,
+  "name": "Touhou Koumakyou: New Classic - the Embodiment of Scarlet Devil",
+  "cover": "touhou.jpg",
+  "bytes": 41345,
+  "trailer": null
+ },
+ "quake-2": {
+  "app": 2320,
+  "name": "Quake II",
+  "cover": "quake-2.jpg",
+  "bytes": 25076,
+  "trailer": null
+ },
+ "hexen-2": {
+  "app": 9060,
+  "name": "HeXen II",
+  "cover": "hexen-2.jpg",
+  "bytes": 24280,
+  "trailer": null
+ },
+ "sekiro": {
+  "app": 814380,
+  "name": "Sekiro\u2122: Shadows Die Twice - GOTY Edition",
+  "cover": "sekiro.jpg",
+  "bytes": 39009,
+  "trailer": null
+ },
+ "tomb-raider": {
+  "app": 224960,
+  "name": "Tomb Raider I (1996)",
+  "cover": "tomb-raider.jpg",
+  "bytes": 40909,
+  "trailer": null
+ },
+ "minecraft": {
+  "app": 1672970,
+  "name": "Minecraft Dungeons",
+  "cover": "minecraft.jpg",
+  "bytes": 52598,
+  "trailer": null
+ },
+ "terraria": {
+  "app": 105600,
+  "name": "Terraria",
+  "cover": "terraria.jpg",
+  "bytes": 62177,
+  "trailer": null
+ },
+ "racing": {
+  "app": 1262560,
+  "name": "Need for Speed\u2122 Most Wanted",
+  "cover": "racing.jpg",
+  "bytes": 45482,
+  "trailer": null
+ }
+}
