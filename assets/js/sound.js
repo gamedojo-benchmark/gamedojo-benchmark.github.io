@@ -8,6 +8,7 @@
   if (!audio || !buttons.length) return;
 
   const preference = "gd-sound-choice";
+  const StrikeAudio = window.AudioContext || window.webkitAudioContext;
   const playlist = [
     "assets/audio/rapid-as-wildfires.mp3",
     "assets/audio/all-conquering-tide.mp3",
@@ -18,6 +19,8 @@
   let triedOnClick = false;
   let entryTimer;
   let request = 0;
+  let strikeContext, strikeGain, strikeBuffer, strikeSource;
+  let openingFinished = false;
   try { choice = localStorage.getItem(preference); } catch { /* storage may be disabled */ }
   const ask = typeof dialog?.showModal === "function";
   let enabled = !ask && choice === "on";
@@ -61,14 +64,58 @@
     drawButtons();
   }
 
+  function prepareStrike() {
+    if (!StrikeAudio || openingFinished) return;
+    try {
+      if (!strikeContext) {
+        strikeContext = new StrikeAudio();
+        strikeGain = strikeContext.createGain();
+        strikeGain.gain.value = 0.68;
+        strikeGain.connect(strikeContext.destination);
+        fetch("assets/audio/steel-parry.wav")
+          .then(response => {
+            if (!response.ok) throw new Error("Could not load steel strike");
+            return response.arrayBuffer();
+          })
+          .then(data => strikeContext.decodeAudioData(data))
+          .then(buffer => { strikeBuffer = buffer; })
+          .catch(() => {});
+      }
+      strikeContext.resume().catch(() => {});
+    } catch { /* The music player can still run without the optional strike. */ }
+  }
+
+  function stopStrike() {
+    strikeSource?.stop();
+    strikeSource = null;
+  }
+
+  window.addEventListener("gd:opening-strike", () => {
+    if (!enabled || openingFinished || !strikeBuffer || strikeContext?.state !== "running") return;
+    stopStrike();
+    const source = strikeContext.createBufferSource();
+    source.buffer = strikeBuffer;
+    source.connect(strikeGain);
+    source.onended = () => {
+      source.disconnect();
+      if (strikeSource === source) strikeSource = null;
+    };
+    source.start();
+    strikeSource = source;
+  });
+
   function setEnabled(on) {
     enabled = on;
     try { localStorage.setItem(preference, on ? "on" : "off"); } catch { /* optional */ }
-    if (on) play();
+    if (on) {
+      prepareStrike();
+      play();
+    }
     else {
       ++request;
       audio.pause();
       playing = false;
+      stopStrike();
     }
     drawButtons();
   }
@@ -104,6 +151,7 @@
       event.preventDefault();
     }
     triedOnClick = true;
+    prepareStrike();
     play();
   }, true);
 
@@ -115,7 +163,12 @@
   });
 
   window.addEventListener("gd:opening-start", play);
-  window.addEventListener("gd:opening-done", play);
+  window.addEventListener("gd:opening-done", () => {
+    openingFinished = true;
+    stopStrike();
+    strikeContext?.close().catch(() => {});
+    play();
+  });
   drawButtons();
 
   if (ask) {

@@ -14,6 +14,14 @@
   const saveData = navigator.connection?.saveData;
   const T = { cuts: 0.42, land: 3.56, impact: 4.58, end: 6 };
   const CUTS = ["sekiro-1", "cuphead-1", "hollow-knight-2", "quake-2-2", "terraria-1", "sekiro-2"];
+  const secondCut = 0.16;
+  const crossingDelay = 0.10;
+  const cutDuration = (T.land - T.cuts) / CUTS.length;
+  const strikeTimes = [
+    0,
+    ...CUTS.flatMap((_, i) => [T.cuts + i * cutDuration, T.cuts + (i + secondCut) * cutDuration]),
+    T.land, T.land + crossingDelay, T.impact,
+  ];
   const angles = [0.54, -0.58, 0.96, -0.38, 0.38, -0.83];
   const gold = "255,177,73";
   const teal = "78,235,221";
@@ -23,6 +31,7 @@
   let loadTimer;
   let finishTimer;
   let originalScroll = 0;
+  let nextStrike = 0;
 
   function finish(immediate) {
     if (opening.dataset.state === "done") return;
@@ -150,7 +159,7 @@
 
     const color = direction > 0 ? gold : teal;
     slash(progress * 1.75, angles[index], color, width * 0.5, height * 0.49);
-    slash((progress - 0.16) * 2.05, angles[index] - direction * 0.23, color, width * 0.53, height * 0.53, 0.72);
+    slash((progress - secondCut) * 2.05, angles[index] - direction * 0.23, color, width * 0.53, height * 0.53, 0.72);
   }
 
   function drawLanding(t) {
@@ -168,7 +177,7 @@
     ctx.fillStyle = `rgba(6,7,12,${veil})`;
     ctx.fillRect(0, 0, width, height);
     slash(span(t, T.land, T.land + 0.57), 0.37, gold, width / 2, height / 2);
-    slash(span(t, T.land + 0.10, T.land + 0.65), -0.47, teal, width / 2, height / 2);
+    slash(span(t, T.land + crossingDelay, T.land + 0.65), -0.47, teal, width / 2, height / 2);
 
     const hit = span(t, T.impact, T.impact + 0.48);
     if (hit > 0 && hit < 1) {
@@ -189,6 +198,11 @@
     if (t < T.cuts) drawOpening(t);
     else if (t < T.land) drawCut(t);
     else drawLanding(t);
+    while (nextStrike < strikeTimes.length && t >= strikeTimes[nextStrike]) {
+      // Don't play a backlog of strikes if a hidden tab drops animation frames.
+      if (t - strikeTimes[nextStrike] < 0.07) g.dispatchEvent(new Event("gd:opening-strike"));
+      nextStrike++;
+    }
     g.requestAnimationFrame(frame);
   }
 
