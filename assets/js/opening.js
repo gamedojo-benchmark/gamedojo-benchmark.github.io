@@ -10,7 +10,7 @@
   const query = new URLSearchParams(location.search);
   const still = query.has("still") || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const skipFilm = navigator.connection?.saveData || (still && query.get("intro") !== "force");
-  const landingMs = 600;
+  const landingMs = 1200;
   let timer;
   let originalScroll = 0;
 
