@@ -321,7 +321,7 @@
       const pl = PLAY_PAGES[g.id];
       const tag = pl ? "a" : "div";
       row.innerHTML = `<${tag} class="game-cover${pl ? " is-playable" : ""}"${pl ? ` href="${pl}" aria-label="Play ${esc(g.name)}"` : ""}>`
-        + `<img src="assets/covers/${g.id}.jpg?v=2" alt="${esc(g.full || g.name)}" loading="lazy" width="460" height="215">`
+        + `<img src="assets/covers/${g.id}.jpg?v=3" alt="${esc(g.full || g.name)}" loading="lazy" width="460" height="215">`
         + `<span class="game-cover__over"><b>${esc(g.name)}</b><span>${esc(g.pattern)} · ${g.dim}</span>`
         + (pl ? `<i class="game-cover__play">▶ Play</i>` : "") + `</span>`
         + (pl ? `<span class="game-cover__badge" aria-hidden="true">▶</span>` : "")
