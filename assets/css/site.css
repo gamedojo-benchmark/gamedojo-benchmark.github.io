@@ -99,6 +99,55 @@ kbd {
 .nav.is-solid .nav__hp { opacity: 1; }
 .nav__hp i { display: block; height: 100%; background: linear-gradient(90deg, var(--ember-500), var(--gold-500)); transform-origin: 0 50%; }
 
+/* ---------- music control ---------- */
+.music-disc {
+  position: fixed; z-index: 60;
+  right: max(16px, calc(env(safe-area-inset-right) + 8px));
+  bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px));
+  display: grid; place-items: center; width: 58px; height: 58px; padding: 4px;
+  border: 1px solid rgba(233, 238, 249, 0.35); border-radius: 50%; cursor: pointer;
+  background: rgba(10, 12, 20, 0.88); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  color: #f9f3e5;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.music-disc[hidden] { display: none; }
+.opening-on .music-disc { visibility: hidden; }
+.music-disc:hover { border-color: var(--gold-300); transform: translateY(-2px); }
+.music-disc:focus-visible { outline: 2px solid var(--teal-400); outline-offset: 3px; }
+.music-disc.is-playing { border-color: var(--gold-500); box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55), 0 0 15px rgba(255, 194, 105, 0.16); }
+.music-disc__face {
+  width: 100%; height: 100%; border-radius: 50%;
+  background:
+    radial-gradient(circle, #0d111a 0 25%, rgba(242, 239, 231, 0.65) 26% 28%, transparent 29% 68%, rgba(242, 239, 231, 0.68) 69% 71%, transparent 72%),
+    repeating-radial-gradient(circle, transparent 0 2px, rgba(240, 245, 252, 0.18) 2.5px 3px, transparent 3.5px 4px),
+    conic-gradient(from 22deg, #313544, #a1845c 38deg, #f0d7a0 58deg, #343949 83deg, #24585f 157deg, #83d7cb 187deg, #cad9ee 202deg, #3e4356 222deg, #615083 290deg, #313544);
+  animation: music-disc-spin 7s linear infinite paused;
+}
+.music-disc.is-playing .music-disc__face { animation-play-state: running; }
+@keyframes music-disc-spin { to { transform: rotate(1turn); } }
+.music-disc__symbol { position: absolute; display: grid; place-items: center; inset: 0; }
+.music-disc__symbol::before {
+  content: ""; width: 0; height: 0; margin-left: 2px;
+  border-block: 5px solid transparent; border-left: 8px solid currentColor;
+}
+.music-disc.is-playing .music-disc__symbol::before {
+  width: 9px; height: 10px; margin-left: 0;
+  border: 0; border-inline: 3px solid currentColor;
+}
+.music-disc__label {
+  position: absolute; top: 50%; right: calc(100% + 8px); transform: translateY(-50%);
+  padding: 5px 9px; border-radius: 6px; background: #141824;
+  font: 500 14px / 1.2 var(--body); white-space: nowrap; opacity: 0; pointer-events: none;
+}
+.music-disc:focus-visible .music-disc__label { opacity: 1; }
+@media (hover: hover) { .music-disc:hover .music-disc__label { opacity: 1; } }
+html.still .music-disc__face { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .music-disc__face { animation: none; }
+  .music-disc { transition: none; }
+  .music-disc:hover { transform: none; }
+}
+
 /* ---------- hero ---------- */
 .hero {
   position: relative;
@@ -688,6 +737,7 @@ html.still .fight[open], html.still .fight[open]::backdrop { animation: none; }
 @media (max-width: 600px) {
   body { font-size: 16px; }
   .nav { gap: 10px; padding-inline: 12px; }
+  .music-disc { width: 52px; height: 52px; }
   .game-row { grid-template-columns: 1fr 1fr; }
   .chart-card { padding: 18px 14px 12px; }
   .wrap, .wrap--wide { width: min(100% - 32px, var(--wrap-wide)); }

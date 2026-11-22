@@ -13,16 +13,25 @@
   const buffers = new Map();
   let context, current, scene;
   let introStart = 0;
+  let ambientOffset = 0;
   let request = 0;
   let enabled = true;
   let triedOnClick = false;
   try { enabled = localStorage.getItem(preference) !== "off"; } catch { /* storage may be disabled */ }
 
+  function musicPlaying() {
+    return enabled && context?.state === "running" && current?.name === "ambient";
+  }
+
   function drawButtons() {
     buttons.forEach(button => {
-      button.classList.toggle("is-enabled", enabled);
-      button.setAttribute("aria-label", enabled ? "Mute sound" : "Unmute sound");
-      button.textContent = enabled ? "Mute" : "Unmute";
+      const disc = button.id === "musicDisc";
+      const active = disc ? musicPlaying() : enabled;
+      const action = active ? "Mute" : disc ? "Play" : "Unmute";
+      button.classList.toggle(disc ? "is-playing" : "is-enabled", active);
+      button.setAttribute("aria-label", `${action} ${disc ? "background music" : "sound"}`);
+      const label = button.querySelector("[data-sound-label]") || button;
+      label.textContent = action;
     });
   }
 
@@ -41,8 +50,9 @@
 
   function fadeOut() {
     if (!current) return;
-    const { source, volume } = current;
+    const { source, volume, name, offset, startedAt } = current;
     const now = context.currentTime;
+    if (name === "ambient") ambientOffset = (offset + now - startedAt) % source.buffer.duration;
     if (volume.gain.cancelAndHoldAtTime) volume.gain.cancelAndHoldAtTime(now);
     else volume.gain.cancelScheduledValues(now);
     volume.gain.setTargetAtTime(0, now, 0.06);
@@ -65,7 +75,7 @@
     loading.then(buffer => {
       if (nextRequest !== request || context.state !== "running") return;
       const loop = name === "ambient";
-      const offset = loop ? 0 : Math.max(0, (performance.now() - introStart) / 1000);
+      const offset = loop ? ambientOffset : Math.max(0, (performance.now() - introStart) / 1000);
       if (offset >= buffer.duration) return;
 
       const source = context.createBufferSource();
@@ -80,11 +90,15 @@
       source.onended = () => {
         source.disconnect();
         volume.disconnect();
-        if (current?.source === source) current = null;
+        if (current?.source === source) {
+          current = null;
+          drawButtons();
+        }
       };
       source.start(now, offset);
       fadeOut();
-      current = { name, source, volume };
+      current = { name, source, volume, offset, startedAt: now };
+      drawButtons();
     }).catch(() => {
       if (nextRequest !== request) return;
       enabled = false;
@@ -120,7 +134,7 @@
   buttons.forEach(button => {
     button.hidden = false;
     button.addEventListener("click", () => {
-      enabled = !enabled;
+      enabled = button.id === "musicDisc" ? !musicPlaying() : !enabled;
       try { localStorage.setItem(preference, enabled ? "on" : "off"); } catch { /* optional */ }
       if (enabled) unlock();
       else { ++request; fadeOut(); }

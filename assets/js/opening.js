@@ -37,7 +37,7 @@
     g.removeEventListener("click", onSkip, true);
     g.removeEventListener("wheel", onSkip, true);
     if (originalScroll) g.scrollTo({ top: originalScroll, behavior: "instant" });
-    if (restoreFocus) doc.querySelector(".nav [data-sound-toggle]:not([hidden])")?.focus({ preventScroll: true });
+    if (restoreFocus) doc.querySelector("#musicDisc:not([hidden])")?.focus({ preventScroll: true });
     if (immediate) opening.remove();
     else setTimeout(() => opening.remove(), 450);
     g.dispatchEvent(new CustomEvent("gd:opening-done"));
