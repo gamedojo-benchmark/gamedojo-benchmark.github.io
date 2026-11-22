@@ -24,7 +24,7 @@
   let musicContext;
   let musicGain;
   let request = 0;
-  let strikeContext, strikeGain, strikeBuffer, strikeSource;
+  let strikeContext, strikeBuffer, activeStrike;
   let openingFinished = false;
   try { choice = localStorage.getItem(preference); } catch { /* storage may be disabled */ }
   const ask = typeof dialog?.showModal === "function";
@@ -125,10 +125,7 @@
     try {
       if (!strikeContext) {
         strikeContext = new StrikeAudio();
-        strikeGain = strikeContext.createGain();
-        strikeGain.gain.value = 0.68;
-        strikeGain.connect(strikeContext.destination);
-        fetch("assets/audio/steel-parry.wav?v=3")
+        fetch("assets/audio/steel-parry.wav?v=4")
           .then(response => {
             if (!response.ok) throw new Error("Could not load steel strike");
             return response.arrayBuffer();
@@ -142,22 +139,32 @@
   }
 
   function stopStrike() {
-    strikeSource?.stop();
-    strikeSource = null;
+    if (!activeStrike) return;
+    const { source, gain } = activeStrike;
+    const now = strikeContext.currentTime;
+    // Release the previous ring smoothly when the next blade arrives.
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.linearRampToValueAtTime(0, now + 0.004);
+    source.stop(now + 0.004);
+    activeStrike = null;
   }
 
   window.addEventListener("gd:opening-strike", () => {
     if (!enabled || openingFinished || !strikeBuffer || strikeContext?.state !== "running") return;
     stopStrike();
     const source = strikeContext.createBufferSource();
+    const gain = strikeContext.createGain();
+    gain.gain.value = 0.68;
     source.buffer = strikeBuffer;
-    source.connect(strikeGain);
+    source.connect(gain);
+    gain.connect(strikeContext.destination);
     source.onended = () => {
       source.disconnect();
-      if (strikeSource === source) strikeSource = null;
+      gain.disconnect();
+      if (activeStrike?.source === source) activeStrike = null;
     };
     source.start();
-    strikeSource = source;
+    activeStrike = { source, gain };
   });
 
   function setEnabled(on) {
