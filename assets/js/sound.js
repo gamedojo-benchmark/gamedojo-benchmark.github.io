@@ -12,7 +12,7 @@
     "assets/audio/rapid-as-wildfires.mp3",
     "assets/audio/all-conquering-tide.mp3",
   ];
-  const musicVolume = 0.25;
+  const musicVolume = 0.17;
   const fadeDuration = 700;
   let trackIndex = 0;
   let choice;
