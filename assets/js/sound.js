@@ -16,6 +16,7 @@
   const fadeDuration = 700;
   let trackIndex = 0;
   let choice;
+  let sessionChoice;
   let playing = false;
   let triedOnClick = false;
   let entryTimer;
@@ -24,8 +25,9 @@
   let musicGain;
   let request = 0;
   try { choice = localStorage.getItem(preference); } catch { /* storage may be disabled */ }
-  const ask = typeof dialog?.showModal === "function";
-  let enabled = !ask && choice === "on";
+  try { sessionChoice = sessionStorage.getItem(preference); } catch { /* storage may be disabled */ }
+  const ask = typeof dialog?.showModal === "function" && !sessionChoice;
+  let enabled = !ask && (sessionChoice ?? choice) === "on";
 
   audio.src = playlist[trackIndex];
   audio.volume = 0;
@@ -117,9 +119,15 @@
     drawButtons();
   }
 
+  function rememberSessionChoice(value) {
+    try { sessionStorage.setItem(preference, value); } catch { /* optional */ }
+  }
+
   function setEnabled(on) {
     enabled = on;
-    try { localStorage.setItem(preference, on ? "on" : "off"); } catch { /* optional */ }
+    const value = on ? "on" : "off";
+    rememberSessionChoice(value);
+    try { localStorage.setItem(preference, value); } catch { /* optional */ }
     if (on) {
       if (playing && !audio.paused) fadeVolume(musicVolume);
       else clearInterval(fadeTimer);
@@ -206,5 +214,7 @@
       setEnabled(false);
     });
     dialog.showModal();
+    // Default to muted if the visitor reloads before choosing.
+    rememberSessionChoice("off");
   }
 })();
