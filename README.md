@@ -20,9 +20,9 @@ python3 tools/check_site.py
 
 检查所有 HTML/CSS 本地资源路径、锚点、页面数据引用的图片和视频、游戏入口、文件大小和 JavaScript 语法。路径按文件名大小写检查，与 GitHub Pages 的部署环境保持一致。资源检查只需要 Python 3；JavaScript 语法检查需要本机提供 Node.js，未安装时会明确报告跳过。
 
-首页提供[论文 PDF](assets/paper/gamedojo.pdf)、[代码仓库](https://github.com/THUSI-Lab/GameDojo)、[GameDojo 数据集](https://huggingface.co/datasets/THUSI-Lab/GameDojo)和 [GameDojo-4B 模型卡](https://huggingface.co/THUSI-Lab/GameDojo-4B)。
+首页提供[论文](assets/paper/gamedojo.pdf)、[代码仓库](https://github.com/THUSI-Lab/GameDojo)、[GameDojo 数据集](https://huggingface.co/datasets/THUSI-Lab/GameDojo)和 [GameDojo-4B 模型卡](https://huggingface.co/THUSI-Lab/GameDojo-4B)。
 
-首页的 GitHub 和 Hugging Face 图标来自 [Lobe Icons](https://github.com/lobehub/lobe-icons)，许可见 [LICENSE.txt](assets/icons/models/LICENSE.txt)。
+首页的 GitHub 和 Hugging Face 图标来自 [Lobe Icons](https://github.com/lobehub/lobe-icons)，许可见 [LICENSE.txt](assets/icons/models/LICENSE.txt)。arXiv 图标来自 [Simple Icons](https://github.com/simple-icons/simple-icons/blob/develop/icons/arxiv.svg)。
 
 ## GitHub Pages
 
