@@ -57,7 +57,7 @@
     <a href="#models">Agents</a>
     <a href="#citation">BibTeX</a>
   </div>
-  <a class="nav__paper" href="#paper-links">Paper</a>
+  <a class="nav__paper" href="assets/paper/gamedojo.pdf">Paper</a>
   <span class="nav__hp" aria-hidden="true"><i id="navHp"></i></span>
 </nav>
 
@@ -86,7 +86,7 @@
       <span class="byline__notes"><sup>*</sup>Equal contribution &nbsp;&nbsp;<sup>†</sup>Co-corresponding authors</span>
     </p>
     <div class="links" id="paper-links">
-      <a class="btn btn--gold" href="#" data-todo="arXiv URL" aria-disabled="true" tabindex="-1" title="Available after review">Paper <span class="btn__status">Soon</span></a>
+      <a class="btn btn--gold" href="assets/paper/gamedojo.pdf">Paper (PDF)</a>
       <a class="btn" href="https://github.com/THUSI-Lab/GameDojo"><img class="btn__icon" src="assets/icons/github.svg" alt="" width="18" height="18">Code</a>
       <a class="btn" href="https://huggingface.co/datasets/THUSI-Lab/GameDojo" aria-label="GameDojo dataset and benchmark"><img class="btn__icon" src="assets/icons/huggingface.svg" alt="" width="18" height="18">GameDojo</a>
       <a class="btn" href="https://huggingface.co/THUSI-Lab/GameDojo-4B"><img class="btn__icon" src="assets/icons/models/gamedojo.svg?v=2" alt="" width="18" height="18">GameDojo-4B</a>
@@ -162,12 +162,12 @@
           <button type="button" data-v="average" aria-pressed="false">Average</button>
         </div>
       </div>
-      <ul class="legend" aria-label="Legend">
-        <li><i class="legend__swatch legend__swatch--paused"></i>Time-paused</li>
-        <li><i class="legend__swatch legend__swatch--real"></i>Real-time</li>
+      <ul class="legend" id="leaderboardLegend" aria-label="Leaderboard time limits and reference">
+        <li><i class="legend__swatch legend__swatch--paused"></i>Time-paused (300 steps, one gameplay minute)</li>
+        <li><i class="legend__swatch legend__swatch--real"></i>Real-time (three physical minutes)</li>
         <li><i class="legend__swatch legend__swatch--ref"></i>Random</li>
       </ul>
-      <div class="chart" id="chartMedium" role="img" aria-label="Frontier models at Medium difficulty, time-paused versus real-time."></div>
+      <div class="chart" id="chartMedium" role="img" aria-describedby="leaderboardLegend" aria-label="Frontier models at Medium difficulty, time-paused versus real-time."></div>
       <div class="chart-card__foot">
         <div class="seg seg--metric" id="segMetric" role="group" aria-label="Metric">
           <button type="button" class="is-on" data-m="pg" aria-pressed="true">Progress</button>
