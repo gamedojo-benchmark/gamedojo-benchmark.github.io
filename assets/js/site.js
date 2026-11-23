@@ -35,8 +35,8 @@
   /* ---------- data index ---------- */
   const bosses = [], byId = {};
   D.games.forEach(g => g.bosses.forEach(b => { b.game = g; b.index = bosses.length; bosses.push(b); byId[b.id] = b; }));
-  const clip = (b, t) => `assets/clips/${b.id}-${t}.mp4`;
-  const poster = b => `assets/posters/${b.id}.jpg`;
+  const clip = (b, t) => `assets/clips/${b.id}-${t}.mp4?v=en1`;
+  const poster = b => `assets/posters/${b.id}.jpg?v=en1`;
   const playIds = new Set((window.GD_PLAYABLE || []).map(p => p.boss));     // bosses with a playable build
   // game id -> its standalone play page (one playable boss per game)
   const PLAY_PAGES = {};
